@@ -34,11 +34,12 @@ function TrophySVG() {
 }
 
 export default function HeroBanner() {
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const [liveCount, setLiveCount] = useState(0);
   const matches = useScoreStore((s) => s.matches);
 
   useEffect(() => {
+    setNow(new Date());
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -49,29 +50,41 @@ export default function HeroBanner() {
 
   const totalMatches = GROUP_FIXTURES.length;
   const finishedMatches = matches.filter((m) => m.status === "finished").length;
-  const todayMatches = matches.filter((m) => m.date === now.toISOString().slice(0, 10));
+  const todayMatches = now ? matches.filter((m) => m.date === now.toISOString().slice(0, 10)) : [];
 
-  const timeStr = now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const timeStr = now ? now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "--:--:--";
+
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-[#0A0F1E] via-[#0d1a3a] to-[#0A0F1E]">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full opacity-20 animate-pulse"
-            style={{
-              width: Math.random() * 6 + 2 + "px",
-              height: Math.random() * 6 + 2 + "px",
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-              background: i % 2 === 0 ? "#F5A623" : "#3b82f6",
-              animationDelay: Math.random() * 3 + "s",
-              animationDuration: Math.random() * 3 + 2 + "s",
-            }}
-          />
-        ))}
+        {[...Array(20)].map((_, i) => {
+          const rand1 = seededRandom(i * 1.23);
+          const rand2 = seededRandom(i * 4.56);
+          const rand3 = seededRandom(i * 7.89);
+          const rand4 = seededRandom(i * 10.11);
+          const rand5 = seededRandom(i * 12.34);
+          return (
+            <div
+              key={i}
+              className="absolute rounded-full opacity-20 animate-pulse"
+              style={{
+                width: rand1 * 6 + 2 + "px",
+                height: rand2 * 6 + 2 + "px",
+                left: rand3 * 100 + "%",
+                top: rand4 * 100 + "%",
+                background: i % 2 === 0 ? "#F5A623" : "#3b82f6",
+                animationDelay: rand5 * 3 + "s",
+                animationDuration: rand1 * 3 + 2 + "s",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Gradient overlay arcs */}
