@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { fetchLiveFeed } from "@/lib/live/client";
 import type { LiveFeedPayload } from "@/lib/live/feed";
+import TeamFlag from "./TeamFlag";
 
 const FALLBACK: LiveFeedPayload = {
   source: "mock",
@@ -85,12 +86,41 @@ export default function LiveIntelStrip() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{item.kickoffLabel}</p>
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${toneClass(item.momentum)}`}>{item.momentum}</span>
             </div>
-            <p className="mt-2 text-sm font-semibold text-white">
-              {item.homeTeam} vs {item.awayTeam}
-            </p>
-            <p className="mt-1 text-lg font-black text-amber-300">{item.score}</p>
-            <p className="mt-1 text-sm leading-6 text-slate-400">{item.fact}</p>
-            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-slate-500">{item.edge}</p>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <TeamFlag code={item.homeTeam} size="sm" variant="card" />
+              <div className="min-w-0 flex-1 text-center">
+                <p className="truncate text-sm font-semibold text-white">
+                  {item.homeTeam} vs {item.awayTeam}
+                </p>
+                <p className="mt-1 text-lg font-black text-amber-300">{item.score}</p>
+              </div>
+              <TeamFlag code={item.awayTeam} size="sm" variant="card" />
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-full border border-white/10 bg-white/[0.03]">
+              <div className="flex h-2.5">
+                <div className="flex items-center justify-end px-2 text-[10px] font-semibold text-white" style={{ width: `${item.homeChance}%`, background: `linear-gradient(90deg, rgba(16,185,129,0.95), rgba(16,185,129,0.55))` }}>
+                  {item.homeChance}%
+                </div>
+                <div className="flex items-center justify-center px-2 text-[10px] font-semibold text-slate-100" style={{ width: `${item.drawChance}%`, background: `rgba(148,163,184,0.22)` }}>
+                  {item.drawChance}%
+                </div>
+                <div className="flex items-center justify-start px-2 text-[10px] font-semibold text-white" style={{ width: `${item.awayChance}%`, background: `linear-gradient(90deg, rgba(244,63,94,0.55), rgba(244,63,94,0.95))` }}>
+                  {item.awayChance}%
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+              <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-1 font-medium text-cyan-100">
+                Goal line {item.goalLine}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-medium text-slate-200">
+                {item.edge}
+              </span>
+            </div>
+
+            <p className="mt-3 text-sm leading-6 text-slate-400">{item.fact}</p>
           </article>
         ))}
       </div>

@@ -99,8 +99,30 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
             <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">
               {liveMatch.status === "upcoming" ? "Forecast edge" : "Match state"}
             </p>
+            <div className="mt-3 w-full overflow-hidden rounded-full border border-white/10 bg-white/[0.03]">
+              <div className="flex h-2.5">
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${insight.home}%`,
+                    background: `linear-gradient(90deg, ${home.color}ee, ${home.color}90)`,
+                  }}
+                />
+                <div className="h-full bg-white/12" style={{ width: `${insight.draw}%` }} />
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${insight.away}%`,
+                    background: `linear-gradient(90deg, ${away.color}85, ${away.color}ee)`,
+                  }}
+                />
+              </div>
+            </div>
             <p className="mt-3 max-w-full rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-100">
               Predicted score {predictedScore}
+            </p>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-500">
+              {insight.totalGoals.toFixed(1)} expected goals · {insight.intensity} confidence
             </p>
           </div>
 

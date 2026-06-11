@@ -1,6 +1,6 @@
 import { GROUP_FIXTURES } from "@/lib/data/fixtures";
 import { TEAM_EXTRAS } from "@/lib/data/teamExtras";
-import { getTeam } from "@/lib/data/teams";
+import { getMatchInsight, getTeam } from "@/lib/data/teams";
 
 export type LiveEventType =
   | "match_started"
@@ -42,6 +42,10 @@ export interface LiveMatchSummary {
   score: string;
   edge: string;
   momentum: "home" | "balanced" | "away";
+  homeChance: number;
+  drawChance: number;
+  awayChance: number;
+  goalLine: string;
   fact: string;
 }
 
@@ -73,6 +77,7 @@ function buildLiveMatchSummaries(): LiveMatchSummary[] {
   return GROUP_FIXTURES.slice(0, 8).map((match) => {
     const home = getTeam(match.homeTeam);
     const away = getTeam(match.awayTeam);
+    const insight = getMatchInsight(home.code, away.code);
     const homeForm = TEAM_EXTRAS[home.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
     const awayForm = TEAM_EXTRAS[away.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
     const momentum = homeForm > awayForm ? "home" : awayForm > homeForm ? "away" : "balanced";
@@ -89,6 +94,10 @@ function buildLiveMatchSummaries(): LiveMatchSummary[] {
       score,
       edge,
       momentum,
+      homeChance: insight.home,
+      drawChance: insight.draw,
+      awayChance: insight.away,
+      goalLine: `${insight.homeGoals.toFixed(1)}-${insight.awayGoals.toFixed(1)}`,
       fact:
         match.status === "finished"
           ? `${home.shortName} and ${away.shortName} are now reflected in the standings.`
