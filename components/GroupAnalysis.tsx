@@ -74,10 +74,10 @@ export default function GroupAnalysis({ group, teams, color }: GroupAnalysisProp
       </div>
 
       {/* Group note */}
-      {teams[0] && getTeamExtras(teams[0])?.groupAnalysis && (
+      {validTeams[0] && getTeamExtras(validTeams[0])?.groupAnalysis && (
         <div className="px-5 py-3 border-t border-white/5">
           <p className="text-slate-400 text-xs italic leading-relaxed">
-            {getTeamExtras(teams[0])?.groupAnalysis}
+            {getTeamExtras(validTeams[0])?.groupAnalysis}
           </p>
         </div>
       )}
