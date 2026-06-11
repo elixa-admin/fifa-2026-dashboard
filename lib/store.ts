@@ -23,7 +23,7 @@ interface ScoreStore {
   getMatch: (matchId: string) => Match | undefined;
 }
 
-function computeStandings(matches: Match[], group: string): GroupStanding[] {
+export function computeStandings(matches: Match[], group: string): GroupStanding[] {
   const groupMatches = matches.filter((m) => m.group === group && m.status === "finished");
   const teams = [...new Set(matches.filter((m) => m.group === group).flatMap((m) => [m.homeTeam, m.awayTeam]))];
 

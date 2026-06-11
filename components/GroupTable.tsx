@@ -1,5 +1,6 @@
 "use client";
-import { useScoreStore } from "@/lib/store";
+import { useMemo } from "react";
+import { computeStandings, useScoreStore } from "@/lib/store";
 import TeamFlag from "./TeamFlag";
 
 interface Props {
@@ -8,7 +9,11 @@ interface Props {
 }
 
 export default function GroupTable({ group, compact = false }: Props) {
-  const standings = useScoreStore((s) => s.getGroupStandings(group));
+  const matches = useScoreStore((s) => s.matches);
+  const standings = useMemo(
+    () => computeStandings(matches, group),
+    [matches, group]
+  );
 
   if (!standings.length) return null;
 

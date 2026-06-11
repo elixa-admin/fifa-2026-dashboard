@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { getGroupFixtures } from "@/lib/data/fixtures";
 import { useScoreStore } from "@/lib/store";
@@ -19,7 +19,11 @@ interface Props {
 export default function GroupCard({ group }: Props) {
   const [expanded, setExpanded] = useState(false);
   const fixtures = getGroupFixtures(group);
-  const matches = useScoreStore((s) => s.matches.filter((m) => m.group === group));
+  const allMatches = useScoreStore((s) => s.matches);
+  const matches = useMemo(
+    () => allMatches.filter((m) => m.group === group),
+    [allMatches, group]
+  );
   const color = GROUP_COLORS[group] || "#6366f1";
   const teams = [...new Set(fixtures.flatMap((m) => [m.homeTeam, m.awayTeam]))];
   const played = matches.filter((m) => m.status === "finished").length;
