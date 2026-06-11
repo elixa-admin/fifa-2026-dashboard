@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 function NavBar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[#060c1a]/78 backdrop-blur-2xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-3 sm:px-4">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-0">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 group">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-xl">⚽</span>
           <div className="min-w-0">
@@ -34,7 +34,7 @@ function NavBar() {
           </div>
         </Link>
 
-        <nav className="flex max-w-[62vw] items-center gap-1 overflow-x-auto rounded-full border border-white/8 bg-white/[0.04] p-1 sm:max-w-none">
+        <nav className="flex w-full items-center gap-1 overflow-x-auto rounded-full border border-white/8 bg-white/[0.04] p-1 sm:w-auto sm:max-w-none">
           {[
             { href: "/", label: "Home" },
             { href: "/groups/A", label: "Groups" },
