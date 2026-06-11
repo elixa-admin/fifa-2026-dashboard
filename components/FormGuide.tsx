@@ -1,5 +1,3 @@
-"use client";
-
 interface FormGuideProps {
   form: ('W' | 'D' | 'L')[];
   size?: "sm" | "md";
