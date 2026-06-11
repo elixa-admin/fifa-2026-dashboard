@@ -54,15 +54,15 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
       </div>
       {liveMatch.status === "live" && <div className="absolute inset-0 border border-red-400/25 shadow-[inset_0_0_28px_rgba(248,113,113,0.14)]" />}
 
-      <div className="relative p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="relative p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
               Group {liveMatch.group} • Matchday {liveMatch.matchday}
             </p>
             <p className="mt-1 text-sm text-slate-300">{liveMatch.venue}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-medium text-slate-300">
               {new Date(liveMatch.date + "T12:00:00").toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}
             </span>
@@ -75,31 +75,31 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)] lg:items-center">
           <TeamSide code={liveMatch.homeTeam} side="home" accent={home.color} />
 
-          <div className="mx-auto flex min-w-[168px] flex-col items-center rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-5 py-4 text-center backdrop-blur-md">
+          <div className="mx-auto flex w-full min-w-0 flex-col items-center rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-4 py-4 text-center backdrop-blur-md sm:px-5">
             {liveMatch.status !== "upcoming" ? (
               <div className="flex items-end gap-2">
-                <span className={`text-5xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
+                <span className={`text-4xl font-black tabular-nums sm:text-5xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.homeScore}
                 </span>
                 <span className="pb-2 text-2xl font-light text-slate-500">-</span>
-                <span className={`text-5xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
+                <span className={`text-4xl font-black tabular-nums sm:text-5xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.awayScore}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-black text-white">{insight.home}%</span>
+                <span className="text-xl font-black text-white sm:text-2xl">{insight.home}%</span>
                 <span className="text-xs uppercase tracking-[0.24em] text-slate-500">to</span>
-                <span className="text-2xl font-black text-white">{insight.away}%</span>
+                <span className="text-xl font-black text-white sm:text-2xl">{insight.away}%</span>
               </div>
             )}
             <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">
               {liveMatch.status === "upcoming" ? "Forecast edge" : "Match state"}
             </p>
-            <p className="mt-3 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-100">
+            <p className="mt-3 max-w-full rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-100">
               Predicted score {predictedScore}
             </p>
           </div>
@@ -108,13 +108,13 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
         </div>
 
         <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Match pulse</p>
               <p className="mt-1 text-base font-semibold text-white">{likelyWinner === "Level" ? "Fine margins everywhere" : `${likelyWinner} lead the model`}</p>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-300">{insight.narrative}</p>
             </div>
-            <div className="grid min-w-[220px] grid-cols-2 gap-2">
+            <div className="grid w-full grid-cols-2 gap-2 lg:min-w-[220px] lg:max-w-[280px]">
               <MetricPill label="Win edge" value={likelyWinner} tone="cyan" />
               <MetricPill label="Goal line" value={predictedScore} tone="amber" />
               <MetricPill label="Total goals" value={insight.totalGoals.toFixed(1)} tone="emerald" />
@@ -125,14 +125,14 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
 
         <button
           onClick={() => setOpen(!open)}
-          className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-white/[0.06]"
+          className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-white/[0.06] sm:text-[15px]"
         >
           {open ? "Hide analytics" : "Open analytics and team detail"}
         </button>
       </div>
 
       {open && (
-        <div className="relative border-t border-white/8 px-5 pb-5 pt-5">
+        <div className="relative border-t border-white/8 px-4 pb-5 pt-5 sm:px-5">
           <div className="grid gap-5">
             <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.04] p-4">
               <OddsGauge homeCode={liveMatch.homeTeam} awayCode={liveMatch.awayTeam} />
@@ -203,10 +203,10 @@ function TeamSide({ code, side, accent }: { code: string; side: "home" | "away";
   return (
     <div className={`flex flex-col gap-3 ${side === "away" ? "lg:items-end lg:text-right" : ""}`}>
       <div className={`flex items-center gap-3 ${side === "away" ? "lg:flex-row-reverse" : ""}`}>
-        <TeamFlag code={code} size="lg" variant="hero" />
+        <TeamFlag code={code} size="sm" variant="hero" />
         <div>
-          <p className="text-xl font-black text-white">{team.shortName}</p>
-          <p className="text-sm text-slate-400">FIFA rank #{team.fifaRank}</p>
+          <p className="max-w-[10rem] text-lg font-black leading-tight text-white sm:text-xl">{team.shortName}</p>
+          <p className="text-xs text-slate-400 sm:text-sm">FIFA rank #{team.fifaRank}</p>
         </div>
       </div>
 
@@ -241,7 +241,7 @@ function TeamSide({ code, side, accent }: { code: string; side: "home" | "away";
 
 function MiniTag({ label, accent }: { label: string; accent: string }) {
   return (
-    <span className="rounded-full border px-3 py-1 text-[11px] font-medium text-slate-200" style={{ borderColor: `${accent}55`, background: `${accent}16` }}>
+    <span className="rounded-full border px-2.5 py-1 text-[10px] font-medium text-slate-200 sm:px-3 sm:text-[11px]" style={{ borderColor: `${accent}55`, background: `${accent}16` }}>
       {label}
     </span>
   );
@@ -258,7 +258,7 @@ function MetricPill({ label, value, tone }: { label: string; value: string; tone
   return (
     <div className={`rounded-2xl border px-3 py-2 ${tones[tone]}`}>
       <p className="text-[11px] uppercase tracking-[0.2em] opacity-70">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+      <p className="mt-1 text-[13px] font-semibold leading-5 sm:text-sm">{value}</p>
     </div>
   );
 }
@@ -306,7 +306,7 @@ function FactStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2">
       <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-medium text-slate-200">{value}</p>
+      <p className="mt-1 text-[13px] font-medium leading-5 text-slate-200">{value}</p>
     </div>
   );
 }

@@ -88,27 +88,27 @@ export default function HeroBanner() {
       <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/5 blur-3xl" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-cyan-400/5 blur-3xl" />
 
-      <div className="relative z-10 px-6 py-8 md:px-10 md:py-10">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+      <div className="relative z-10 px-4 py-6 sm:px-6 md:px-10 md:py-10">
+        <div className="flex flex-col items-start gap-5 md:flex-row md:items-start md:gap-6">
           {/* Trophy */}
           <div className="flex-shrink-0 animate-[float_4s_ease-in-out_infinite]">
             <TrophySVG />
           </div>
 
           {/* Main text */}
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-              <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest border border-amber-400/30 px-3 py-1 rounded-full bg-amber-400/10">
+          <div className="flex-1 text-left">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-[11px] sm:text-xs font-semibold text-amber-400 uppercase tracking-widest border border-amber-400/30 px-3 py-1 rounded-full bg-amber-400/10">
                 23rd Edition · 2026
               </span>
               {liveCount > 0 && (
-                <span className="text-xs font-semibold text-red-400 uppercase tracking-widest border border-red-400/30 px-3 py-1 rounded-full bg-red-400/10 animate-pulse">
+                <span className="text-[11px] sm:text-xs font-semibold text-red-400 uppercase tracking-widest border border-red-400/30 px-3 py-1 rounded-full bg-red-400/10 animate-pulse">
                   {liveCount} Live
                 </span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[0.95]">
               <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
                 FIFA
               </span>{" "}
@@ -117,12 +117,12 @@ export default function HeroBanner() {
               <span className="text-white/90">2026</span>
             </h1>
 
-            <p className="mt-2 text-slate-400 text-sm md:text-base">
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 md:text-base">
               USA · Canada · Mexico · June 11 – July 19, 2026
             </p>
 
             {/* Stats row */}
-            <div className="mt-5 flex flex-wrap gap-3 justify-center md:justify-start">
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
               <StatChip label="Teams" value="48" color="amber" />
               <StatChip label="Groups" value="12" color="blue" />
               <StatChip label="Matches Played" value={`${finishedMatches}/${totalMatches}`} color="emerald" />
@@ -131,15 +131,15 @@ export default function HeroBanner() {
           </div>
 
           {/* Live clock */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-1">
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/40 px-5 py-3 text-center backdrop-blur-sm">
+          <div className="flex-shrink-0 flex flex-row items-start gap-3 md:flex-col md:items-center md:gap-1">
+            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/40 px-4 py-3 text-center backdrop-blur-sm sm:px-5">
               <p className="text-xs text-slate-500 uppercase tracking-widest mb-1 font-semibold">SAST</p>
-              <p className="text-2xl font-black text-white tabular-nums tracking-tight">{timeStr}</p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xl font-black text-white tabular-nums tracking-tight sm:text-2xl">{timeStr}</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
                 {now?.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" }) || "Loading..."}
               </p>
             </div>
-            <p className="text-xs text-slate-600 mt-1">South African Standard Time</p>
+            <p className="max-w-[7rem] text-[11px] leading-4 text-slate-600 md:mt-1 md:max-w-none md:text-xs">South African Standard Time</p>
           </div>
         </div>
       </div>
@@ -155,9 +155,9 @@ function StatChip({ label, value, color }: { label: string; value: string; color
     cyan: "from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 text-cyan-300",
   };
   return (
-    <div className={`rounded-xl border bg-gradient-to-br ${colors[color]} px-4 py-2 text-center`}>
-      <p className={`text-xl font-black ${colors[color].split(" ").pop()}`}>{value}</p>
-      <p className="text-xs text-slate-400 font-medium">{label}</p>
+    <div className={`rounded-xl border bg-gradient-to-br px-4 py-2 text-center ${colors[color]}`}>
+      <p className={`text-lg font-black sm:text-xl ${colors[color].split(" ").pop()}`}>{value}</p>
+      <p className="text-[11px] font-medium text-slate-400 sm:text-xs">{label}</p>
     </div>
   );
 }

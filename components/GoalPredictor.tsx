@@ -34,34 +34,34 @@ export default function GoalPredictor({ homeCode, awayCode }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Goal projection</p>
           <p className="mt-1 text-sm font-semibold text-white">Expected scoreline and match temperature</p>
         </div>
-        <div className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-200">
+        <div className="w-fit rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-200">
           {insight.totalGoals.toFixed(1)} total goals
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-4 py-5">
-        <div className="flex flex-col items-start gap-2">
+      <div className="grid gap-4 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-4 py-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+        <div className="flex flex-col items-start gap-2 sm:items-start">
           <TeamFlag code={homeCode} size="md" variant="card" />
           <span className="text-sm font-semibold text-white">{homeTeam.shortName}</span>
           <span className="text-xs text-slate-400">xG profile {insight.homeGoals.toFixed(1)}</span>
         </div>
 
-        <div className="flex items-end gap-2">
-          <span className="text-5xl font-black tabular-nums text-white" style={{ textShadow: `0 0 24px ${homeTeam.color}55` }}>
+        <div className="flex items-center justify-start gap-2 sm:items-end sm:justify-center">
+          <span className="text-4xl font-black tabular-nums text-white sm:text-5xl" style={{ textShadow: `0 0 24px ${homeTeam.color}55` }}>
             {insight.homeGoals.toFixed(1)}
           </span>
           <span className="pb-2 text-2xl font-light text-slate-500">-</span>
-          <span className="text-5xl font-black tabular-nums text-white" style={{ textShadow: `0 0 24px ${awayTeam.color}55` }}>
+          <span className="text-4xl font-black tabular-nums text-white sm:text-5xl" style={{ textShadow: `0 0 24px ${awayTeam.color}55` }}>
             {insight.awayGoals.toFixed(1)}
           </span>
         </div>
 
-        <div className="flex flex-col items-end gap-2 text-right">
+        <div className="flex flex-col items-start gap-2 text-left sm:items-end sm:text-right">
           <TeamFlag code={awayCode} size="md" variant="card" />
           <span className="text-sm font-semibold text-white">{awayTeam.shortName}</span>
           <span className="text-xs text-slate-400">xG profile {insight.awayGoals.toFixed(1)}</span>

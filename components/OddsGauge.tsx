@@ -26,12 +26,12 @@ export default function OddsGauge({ homeCode, awayCode }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Win outlook</p>
           <p className="mt-1 text-sm font-semibold text-white">{edgeLabel}</p>
         </div>
-        <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-200">
+        <div className="w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-200">
           {confidenceTone}
         </div>
       </div>
@@ -65,12 +65,12 @@ export default function OddsGauge({ homeCode, awayCode }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-sm">
+      <div className="grid gap-3 text-sm sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <div className="flex items-center gap-2 min-w-0">
           <TeamFlag code={homeCode} size="xs" variant="card" />
           <span className="truncate font-medium text-slate-200">{homeTeam.shortName}</span>
         </div>
-        <span className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Model split</span>
+        <span className="text-[11px] uppercase tracking-[0.24em] text-slate-500 sm:text-center">Model split</span>
         <div className="flex items-center justify-end gap-2 min-w-0">
           <span className="truncate font-medium text-slate-200">{awayTeam.shortName}</span>
           <TeamFlag code={awayCode} size="xs" variant="card" />
