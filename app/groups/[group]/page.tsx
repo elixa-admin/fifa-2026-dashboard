@@ -118,10 +118,9 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
       <div className="rounded-2xl border border-white/5 bg-slate-800/20 p-5">
         <h2 className="text-white font-bold text-base mb-4">Qualifying Form &amp; Stats</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {teams.map((code) => {
+          {teams.filter((code) => getTeamExtras(code)).map((code) => {
             const team = getTeam(code);
-            const extras = getTeamExtras(code);
-            if (!extras) return null;
+            const extras = getTeamExtras(code)!;
             const gf = extras.qualifyingGoals ?? 0;
             const ga = extras.qualifyingConceded ?? 0;
             return (

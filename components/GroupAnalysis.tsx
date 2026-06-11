@@ -18,6 +18,9 @@ const PREDICTION_COLOR: Record<string, string> = {
 };
 
 export default function GroupAnalysis({ group, teams, color }: GroupAnalysisProps) {
+  // Filter teams upfront to avoid null returns from map (prevents hydration mismatch)
+  const validTeams = teams.filter((code) => getTeamExtras(code));
+
   return (
     <div
       className="rounded-2xl border border-white/5 overflow-hidden"
@@ -34,10 +37,9 @@ export default function GroupAnalysis({ group, teams, color }: GroupAnalysisProp
       </div>
 
       <div className="divide-y divide-white/5">
-        {teams.map((code, idx) => {
+        {validTeams.map((code, idx) => {
           const team = getTeam(code);
-          const extras = getTeamExtras(code);
-          if (!extras) return null;
+          const extras = getTeamExtras(code)!;
 
           const predColor = PREDICTION_COLOR[extras.prediction] ?? "text-slate-400";
 
