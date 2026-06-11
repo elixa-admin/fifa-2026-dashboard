@@ -1,5 +1,3 @@
-"use client";
-
 import { getTeam } from "@/lib/data/teams";
 import { getTeamExtras } from "@/lib/data/teamExtras";
 import TeamFlag from "./TeamFlag";
