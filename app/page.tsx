@@ -1,4 +1,5 @@
 import HeroBanner from "@/components/HeroBanner";
+import LiveIntelStrip from "@/components/LiveIntelStrip";
 import LiveTicker from "@/components/LiveTicker";
 import GroupCard from "@/components/GroupCard";
 import TournamentOdds from "@/components/TournamentOdds";
@@ -15,6 +16,9 @@ export default function HomePage() {
 
       {/* Live ticker */}
       <LiveTicker />
+
+      {/* Live intel */}
+      <LiveIntelStrip />
 
       {/* Today's matches */}
       {todayMatches.length > 0 && (

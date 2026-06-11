@@ -1,4 +1,5 @@
 import { GROUP_FIXTURES } from "@/lib/data/fixtures";
+import { TEAM_EXTRAS } from "@/lib/data/teamExtras";
 import { getTeam } from "@/lib/data/teams";
 
 export type LiveEventType =
@@ -31,11 +32,25 @@ export interface LiveMatchSnapshot {
   lastUpdatedAt: string;
 }
 
+export interface LiveMatchSummary {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  status: "upcoming" | "live" | "finished";
+  kickoffLabel: string;
+  liveMinute: number | null;
+  score: string;
+  edge: string;
+  momentum: "home" | "balanced" | "away";
+  fact: string;
+}
+
 export interface LiveFeedPayload {
   source: "mock" | "provider" | "poll";
   generatedAt: string;
   snapshot: LiveMatchSnapshot;
   events: LiveMatchEvent[];
+  matches: LiveMatchSummary[];
   notes: string[];
 }
 
@@ -52,6 +67,34 @@ export function buildLiveSnapshot() {
     upcomingMatches,
     lastUpdatedAt: new Date().toISOString(),
   };
+}
+
+function buildLiveMatchSummaries(): LiveMatchSummary[] {
+  return GROUP_FIXTURES.slice(0, 8).map((match) => {
+    const home = getTeam(match.homeTeam);
+    const away = getTeam(match.awayTeam);
+    const homeForm = TEAM_EXTRAS[home.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
+    const awayForm = TEAM_EXTRAS[away.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
+    const momentum = homeForm > awayForm ? "home" : awayForm > homeForm ? "away" : "balanced";
+    const edge = homeForm === awayForm ? "Balanced matchup" : `${momentum === "home" ? home.shortName : away.shortName} carry the trend`;
+    const score = match.homeScore !== null && match.awayScore !== null ? `${match.homeScore}–${match.awayScore}` : "0–0";
+
+    return {
+      matchId: match.id,
+      homeTeam: home.code,
+      awayTeam: away.code,
+      status: match.status,
+      kickoffLabel: match.timeSAST,
+      liveMinute: match.status === "live" ? 0 : null,
+      score,
+      edge,
+      momentum,
+      fact:
+        match.status === "finished"
+          ? `${home.shortName} and ${away.shortName} are now reflected in the standings.`
+          : `${home.shortName} vs ${away.shortName} is a high-signal matchup with a model edge on ${momentum === "balanced" ? "neither side" : momentum === "home" ? home.shortName : away.shortName}.`,
+    };
+  });
 }
 
 export function buildLiveFeedPayload(): LiveFeedPayload {
@@ -74,6 +117,7 @@ export function buildLiveFeedPayload(): LiveFeedPayload {
     generatedAt: now,
     snapshot: buildLiveSnapshot(),
     events: demoEvent ? [demoEvent] : [],
+    matches: buildLiveMatchSummaries(),
     notes: [
       "This endpoint is the contract for live push updates.",
       "Swap the mock source for a provider feed or polling adapter without changing the consumer shape.",
