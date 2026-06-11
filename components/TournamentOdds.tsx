@@ -1,5 +1,5 @@
 "use client";
-import { TEAM_LIST, getTeam } from "@/lib/data/teams";
+import { getTeam } from "@/lib/data/teams";
 import TeamFlag from "./TeamFlag";
 
 const TOP_CONTENDERS = [

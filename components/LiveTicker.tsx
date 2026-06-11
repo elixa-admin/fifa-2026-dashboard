@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useScoreStore } from "@/lib/store";
 import { getTeam } from "@/lib/data/teams";
 

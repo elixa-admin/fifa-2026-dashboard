@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { GROUP_FIXTURES } from "@/lib/data/fixtures";
+import { getSastDateString, GROUP_FIXTURES } from "@/lib/data/fixtures";
 import { useScoreStore } from "@/lib/store";
 
 function TrophySVG() {
@@ -35,22 +35,19 @@ function TrophySVG() {
 
 export default function HeroBanner() {
   const [now, setNow] = useState<Date | null>(null);
-  const [liveCount, setLiveCount] = useState(0);
   const matches = useScoreStore((s) => s.matches);
 
   useEffect(() => {
-    setNow(new Date());
+    const updateClock = () => setNow(new Date());
+    setTimeout(updateClock, 0);
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  useEffect(() => {
-    setLiveCount(matches.filter((m) => m.status === "live").length);
-  }, [matches]);
-
   const totalMatches = GROUP_FIXTURES.length;
+  const liveCount = matches.filter((m) => m.status === "live").length;
   const finishedMatches = matches.filter((m) => m.status === "finished").length;
-  const todayMatches = now ? matches.filter((m) => m.date === now.toISOString().slice(0, 10)) : [];
+  const todayMatches = now ? matches.filter((m) => m.date === getSastDateString(now)) : [];
 
   const timeStr = now ? now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "--:--:--";
 

@@ -1,8 +1,5 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
-import { getTeam } from "@/lib/data/teams";
-import TeamFlag from "@/components/TeamFlag";
 
 // Bracket structure for FIFA 2026 World Cup
 // Round of 32: 16 matches
@@ -11,27 +8,6 @@ import TeamFlag from "@/components/TeamFlag";
 // Semifinals: 2 matches
 // Third place: 1 match
 // Final: 1 match
-
-const BRACKET_SLOTS = {
-  r32: [
-    { id: "R32-1", label: "W-A vs 3rd(C/E/F/H/I)", home: "W-A", away: "3rd" },
-    { id: "R32-2", label: "W-B vs W-C", home: "W-B", away: "W-C" },
-    { id: "R32-3", label: "W-D vs W-F", home: "W-D", away: "W-F" },
-    { id: "R32-4", label: "W-E vs 3rd(A/B/C/G/H)", home: "W-E", away: "3rd" },
-    { id: "R32-5", label: "W-G vs 3rd(A/B/D/J/K)", home: "W-G", away: "3rd" },
-    { id: "R32-6", label: "W-H vs W-K", home: "W-H", away: "W-K" },
-    { id: "R32-7", label: "W-I vs W-J", home: "W-I", away: "W-J" },
-    { id: "R32-8", label: "W-L vs 3rd(A/B/D/G/K)", home: "W-L", away: "3rd" },
-    { id: "R32-9", label: "RU-A vs RU-B", home: "RU-A", away: "RU-B" },
-    { id: "R32-10", label: "RU-C vs RU-D", home: "RU-C", away: "RU-D" },
-    { id: "R32-11", label: "RU-E vs RU-G", home: "RU-E", away: "RU-G" },
-    { id: "R32-12", label: "RU-F vs 3rd", home: "RU-F", away: "3rd" },
-    { id: "R32-13", label: "RU-H vs RU-I", home: "RU-H", away: "RU-I" },
-    { id: "R32-14", label: "RU-J vs RU-K", home: "RU-J", away: "RU-K" },
-    { id: "R32-15", label: "RU-L vs 3rd", home: "RU-L", away: "3rd" },
-    { id: "R32-16", label: "3rd vs 3rd", home: "3rd", away: "3rd" },
-  ],
-};
 
 const ROUND_DATES = {
   r32: "June 28 – July 4",
@@ -42,14 +18,7 @@ const ROUND_DATES = {
   final: "July 19",
 };
 
-const VENUES = {
-  final: "MetLife Stadium, East Rutherford, NJ",
-  thirdPlace: "Hard Rock Stadium, Miami, FL",
-};
-
 export default function BracketPage() {
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
-
   const groups = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 
   return (
@@ -194,7 +163,7 @@ function BracketVisualization() {
 
   return (
     <div className="flex gap-4 min-w-[700px]">
-      {rounds.map((round, ri) => (
+      {rounds.map((round) => (
         <div key={round.name} className="flex flex-col gap-3 flex-1">
           <div className="text-center">
             <p className="text-xs font-bold text-amber-400">{round.label}</p>
@@ -202,7 +171,7 @@ function BracketVisualization() {
           </div>
           <div className="flex flex-col justify-around flex-1 gap-2">
             {[...Array(round.slots)].map((_, si) => (
-              <BracketSlot key={si} round={round.name} slot={si} isFinal={round.name === "F"} />
+              <BracketSlot key={si} isFinal={round.name === "F"} />
             ))}
           </div>
         </div>
@@ -211,7 +180,7 @@ function BracketVisualization() {
   );
 }
 
-function BracketSlot({ round, slot, isFinal }: { round: string; slot: number; isFinal: boolean }) {
+function BracketSlot({ isFinal }: { isFinal: boolean }) {
   return (
     <div className={`rounded-xl border border-slate-700/40 bg-slate-800/30 overflow-hidden ${isFinal ? "border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-slate-800/30" : ""}`}>
       {isFinal && (

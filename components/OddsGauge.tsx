@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useRef } from "react";
 import { getWinProbability, getTeam } from "@/lib/data/teams";
 import TeamFlag from "./TeamFlag";
 
@@ -12,11 +11,6 @@ export default function OddsGauge({ homeCode, awayCode }: Props) {
   const { home, draw, away } = getWinProbability(homeCode, awayCode);
   const homeTeam = getTeam(homeCode);
   const awayTeam = getTeam(awayCode);
-
-  const needleRef = useRef<SVGPathElement>(null);
-
-  // Needle position: 0% home = 180°, 100% home = 0°
-  const homeAngle = 180 - (home / 100) * 180;
 
   // Thermometer bar
   return (
@@ -75,12 +69,22 @@ export default function OddsGauge({ homeCode, awayCode }: Props) {
       </div>
 
       {/* Semicircle odometer */}
-      <OdometerGauge homeCode={homeCode} awayCode={awayCode} homePercent={home} />
+      <OdometerGauge homeCode={homeCode} awayCode={awayCode} homePercent={home} awayPercent={away} />
     </div>
   );
 }
 
-function OdometerGauge({ homeCode, awayCode, homePercent }: { homeCode: string; awayCode: string; homePercent: number }) {
+function OdometerGauge({
+  homeCode,
+  awayCode,
+  homePercent,
+  awayPercent,
+}: {
+  homeCode: string;
+  awayCode: string;
+  homePercent: number;
+  awayPercent: number;
+}) {
   const homeTeam = getTeam(homeCode);
   const awayTeam = getTeam(awayCode);
 
@@ -142,7 +146,7 @@ function OdometerGauge({ homeCode, awayCode, homePercent }: { homeCode: string; 
           {homePercent}%
         </text>
         <text x="170" y="88" fill={awayTeam.color} fontSize="9" fontWeight="bold" textAnchor="middle">
-          {100 - homePercent - (100 - homePercent - (100 - homePercent))}%
+          {awayPercent}%
         </text>
       </svg>
     </div>

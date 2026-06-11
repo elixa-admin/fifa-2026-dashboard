@@ -49,8 +49,6 @@ export default function AdminPage() {
           <h2 className="text-white font-bold">Group {selectedGroup} Matches</h2>
           {fixtures.map((f) => {
             const liveMatch = matches.find((m) => m.id === f.id) || f;
-            const home = getTeam(liveMatch.homeTeam);
-            const away = getTeam(liveMatch.awayTeam);
             return (
               <ScoreEditor
                 key={f.id}

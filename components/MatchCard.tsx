@@ -171,7 +171,7 @@ function TeamFactCard({ code }: { code: string }) {
       </div>
       <p className="text-xs text-slate-400 leading-snug">{team.fact}</p>
       <div className="border-t border-slate-700/30 pt-2">
-        <p className="text-xs text-slate-300 italic">"{team.quote}"</p>
+        <p className="text-xs text-slate-300 italic">&quot;{team.quote}&quot;</p>
         <p className="text-xs text-slate-500 mt-1">— {team.quoteSource}</p>
       </div>
       <div className="text-xs text-slate-500">
