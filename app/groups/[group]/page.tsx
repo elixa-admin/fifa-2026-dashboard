@@ -16,8 +16,9 @@ const GROUP_COLORS: Record<string, string> = {
   I: "#f43f5e", J: "#10b981", K: "#6366f1", L: "#06b6d4",
 };
 
-export default function GroupPage({ params }: { params: { group: string } }) {
-  const group = params.group.toUpperCase();
+export default async function GroupPage({ params }: { params: Promise<{ group: string }> }) {
+  const { group: rawGroup } = await params;
+  const group = rawGroup.toUpperCase();
   if (!GROUPS.includes(group)) notFound();
 
   const fixtures = getGroupFixtures(group);
