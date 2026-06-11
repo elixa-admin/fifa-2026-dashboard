@@ -32,6 +32,10 @@ const PLAYERS_TO_WATCH: [string, string, string, string][] = [
 export default function HomePage() {
   const todayMatches = getTodaysMatches();
 
+  // Filter contenders to only valid ones upfront (prevents hydration issues with null returns)
+  const validContenders = TOP_CONTENDERS.filter((code) => TEAMS[code] && TEAM_EXTRAS[code]);
+  const validPlayers = PLAYERS_TO_WATCH.filter(([code]) => TEAMS[code]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-10">
       {/* Hero */}
@@ -82,10 +86,9 @@ export default function HomePage() {
           emoji="🏆"
         />
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {TOP_CONTENDERS.map((code) => {
-            const team = TEAMS[code];
-            const extras = TEAM_EXTRAS[code];
-            if (!team || !extras) return null;
+          {validContenders.map((code) => {
+            const team = TEAMS[code]!;
+            const extras = TEAM_EXTRAS[code]!;
             const predColors: Record<string, string> = {
               "Final": "text-yellow-400 bg-yellow-400/10",
               "Semi-finals": "text-orange-400 bg-orange-400/10",
@@ -130,9 +133,8 @@ export default function HomePage() {
           emoji="⭐"
         />
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {PLAYERS_TO_WATCH.map(([teamCode, name, role, fact]) => {
-            const team = TEAMS[teamCode];
-            if (!team) return null;
+          {validPlayers.map(([teamCode, name, role, fact]) => {
+            const team = TEAMS[teamCode]!;
             return (
               <div
                 key={name}
