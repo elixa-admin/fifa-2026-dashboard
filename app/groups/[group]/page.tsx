@@ -2,9 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGroupFixtures, GROUPS } from "@/lib/data/fixtures";
 import { getTeam } from "@/lib/data/teams";
+import { getTeamExtras } from "@/lib/data/teamExtras";
 import MatchCard from "@/components/MatchCard";
 import GroupTable from "@/components/GroupTable";
 import TeamFlag from "@/components/TeamFlag";
+import FormGuide from "@/components/FormGuide";
+import GroupAnalysis from "@/components/GroupAnalysis";
 
 export function generateStaticParams() {
   return GROUPS.map((g) => ({ group: g }));
@@ -27,23 +30,15 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
+      {/* Breadcrumb */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/"
-          className="text-slate-500 hover:text-white text-sm transition-colors flex items-center gap-1"
-        >
+        <Link href="/" className="text-slate-500 hover:text-white text-sm transition-colors">
           ← Home
         </Link>
         <span className="text-slate-700">/</span>
         <span className="text-slate-400 text-sm">Groups</span>
         <span className="text-slate-700">/</span>
-        <span
-          className="text-sm font-bold"
-          style={{ color }}
-        >
-          Group {group}
-        </span>
+        <span className="text-sm font-bold" style={{ color }}>Group {group}</span>
       </div>
 
       {/* Hero */}
@@ -51,7 +46,7 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
         className="rounded-3xl overflow-hidden border border-white/5 p-8"
         style={{ background: `linear-gradient(135deg, ${color}18, #0a0f1e)` }}
       >
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 mb-6">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-2xl"
             style={{ background: `linear-gradient(135deg, ${color}cc, ${color}55)` }}
@@ -66,20 +61,36 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
           </div>
         </div>
 
-        {/* Team cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+        {/* Team cards — enhanced with coach + form */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {teams.map((code) => {
             const team = getTeam(code);
+            const extras = getTeamExtras(code);
             return (
               <div
                 key={code}
                 className="rounded-xl border border-white/5 bg-slate-800/40 p-3 flex flex-col items-center gap-2 text-center"
               >
                 <TeamFlag code={code} size="lg" />
-                <div>
+                <div className="w-full">
                   <p className="text-white font-bold text-sm">{team.shortName}</p>
                   <p className="text-slate-500 text-xs">#{team.fifaRank} FIFA</p>
-                  <p className="text-slate-500 text-xs">{team.wcTitles > 0 ? `${team.wcTitles}× Champion` : team.wcBestResult.split(" (")[0]}</p>
+                  <p className="text-slate-500 text-xs mb-1">
+                    {team.wcTitles > 0 ? `${team.wcTitles}× Champion` : team.wcBestResult.split(" (")[0]}
+                  </p>
+                  {extras && (
+                    <>
+                      <p className="text-slate-600 text-[10px] truncate">{extras.coachName}</p>
+                      <div className="flex justify-center mt-1.5">
+                        <FormGuide form={extras.recentForm} size="sm" />
+                      </div>
+                      <div className="flex justify-center gap-2 mt-1 text-[10px]">
+                        <span className="text-slate-500">{extras.squadValue}</span>
+                        <span className="text-slate-700">·</span>
+                        <span className="text-slate-500">Age {extras.avgAge}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -87,13 +98,53 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
         </div>
       </div>
 
-      {/* Standings */}
-      <div className="rounded-2xl border border-white/5 bg-slate-800/30 overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/5">
-          <h2 className="text-white font-bold text-lg">Standings</h2>
+      {/* Two-column layout: Standings + Analysis */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Standings */}
+        <div className="rounded-2xl border border-white/5 bg-slate-800/30 overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/5">
+            <h2 className="text-white font-bold text-lg">Standings</h2>
+          </div>
+          <div className="p-4">
+            <GroupTable group={group} />
+          </div>
         </div>
-        <div className="p-4">
-          <GroupTable group={group} />
+
+        {/* Group Analysis */}
+        <GroupAnalysis group={group} teams={teams} color={color} />
+      </div>
+
+      {/* Qualifying Stats Bar */}
+      <div className="rounded-2xl border border-white/5 bg-slate-800/20 p-5">
+        <h2 className="text-white font-bold text-base mb-4">Qualifying Form &amp; Stats</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {teams.map((code) => {
+            const team = getTeam(code);
+            const extras = getTeamExtras(code);
+            if (!extras) return null;
+            const gf = extras.qualifyingGoals ?? 0;
+            const ga = extras.qualifyingConceded ?? 0;
+            return (
+              <div key={code} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/40">
+                <TeamFlag code={code} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white text-sm font-semibold">{team.shortName}</span>
+                    <FormGuide form={extras.recentForm} size="sm" />
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className="text-emerald-400 font-semibold">{gf} GF</span>
+                    <span>·</span>
+                    <span className="text-rose-400 font-semibold">{ga} GA</span>
+                    <span>·</span>
+                    <span>{extras.squadValue}</span>
+                    <span>·</span>
+                    <span>Avg {extras.avgAge}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -120,7 +171,6 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
             key={g}
             href={`/groups/${g}`}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors"
-            style={{ "--hover-color": GROUP_COLORS[g] } as React.CSSProperties}
           >
             {g}
           </Link>
