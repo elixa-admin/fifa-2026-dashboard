@@ -134,16 +134,18 @@ export default function HeroBanner() {
           </div>
 
           {/* Live clock */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-1">
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/40 px-5 py-3 text-center backdrop-blur-sm">
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-1 font-semibold">SAST</p>
-              <p className="text-2xl font-black text-white tabular-nums tracking-tight">{timeStr}</p>
-              <p className="text-xs text-slate-500 mt-1">
-                {now.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
-              </p>
+          {now && (
+            <div className="flex-shrink-0 flex flex-col items-center gap-1">
+              <div className="rounded-2xl bg-slate-800/60 border border-slate-700/40 px-5 py-3 text-center backdrop-blur-sm">
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1 font-semibold">SAST</p>
+                <p className="text-2xl font-black text-white tabular-nums tracking-tight">{timeStr}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {now.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
+                </p>
+              </div>
+              <p className="text-xs text-slate-600 mt-1">South African Standard Time</p>
             </div>
-            <p className="text-xs text-slate-600 mt-1">South African Standard Time</p>
-          </div>
+          )}
         </div>
       </div>
     </div>
