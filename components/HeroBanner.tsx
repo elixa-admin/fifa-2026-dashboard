@@ -57,7 +57,7 @@ export default function HeroBanner() {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-[#0A0F1E] via-[#0d1a3a] to-[#0A0F1E]">
+    <div className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-gradient-to-br from-[#0A0F1E] via-[#0f1a32] to-[#09111f] shadow-[0_28px_80px_rgba(2,6,23,0.36)]">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => {
@@ -75,7 +75,7 @@ export default function HeroBanner() {
                 height: rand2 * 6 + 2 + "px",
                 left: rand3 * 100 + "%",
                 top: rand4 * 100 + "%",
-                background: i % 2 === 0 ? "#F5A623" : "#3b82f6",
+                background: i % 2 === 0 ? "#F5A623" : "#22d3ee",
                 animationDelay: rand5 * 3 + "s",
                 animationDuration: rand1 * 3 + 2 + "s",
               }}
@@ -86,7 +86,7 @@ export default function HeroBanner() {
 
       {/* Gradient overlay arcs */}
       <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/5 blur-3xl" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-cyan-400/5 blur-3xl" />
 
       <div className="relative z-10 px-6 py-8 md:px-10 md:py-10">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -126,7 +126,7 @@ export default function HeroBanner() {
               <StatChip label="Teams" value="48" color="amber" />
               <StatChip label="Groups" value="12" color="blue" />
               <StatChip label="Matches Played" value={`${finishedMatches}/${totalMatches}`} color="emerald" />
-              <StatChip label="Today's Matches" value={`${todayMatches.length}`} color="purple" />
+              <StatChip label="Today's Matches" value={`${todayMatches.length}`} color="cyan" />
             </div>
           </div>
 
@@ -152,7 +152,7 @@ function StatChip({ label, value, color }: { label: string; value: string; color
     amber: "from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400",
     blue: "from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400",
     emerald: "from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400",
-    purple: "from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400",
+    cyan: "from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 text-cyan-300",
   };
   return (
     <div className={`rounded-xl border bg-gradient-to-br ${colors[color]} px-4 py-2 text-center`}>

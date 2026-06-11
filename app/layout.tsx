@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "FIFA World Cup 2026 Dashboard",
@@ -15,19 +22,19 @@ export const metadata: Metadata = {
 
 function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#060c1a]/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#060c1a]/78 backdrop-blur-2xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <span className="text-2xl">⚽</span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-xl">⚽</span>
           <div>
-            <span className="font-black text-white text-sm leading-none block">
+            <span className="block text-sm leading-none font-black text-white">
               <span className="text-amber-400">FIFA</span> WC 2026
             </span>
-            <span className="text-slate-500 text-xs leading-none block">Interactive Dashboard</span>
+            <span className="block text-xs leading-none text-slate-500">Match Intelligence Dashboard</span>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-1 rounded-full border border-white/8 bg-white/[0.04] p-1">
           {[
             { href: "/", label: "Home" },
             { href: "/groups/A", label: "Groups" },
@@ -37,7 +44,7 @@ function NavBar() {
             <Link
               key={href}
               href={href}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors ${className || ""}`}
+              className={`rounded-full px-3 py-1.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-white ${className || ""}`}
             >
               {label}
             </Link>
@@ -50,13 +57,13 @@ function NavBar() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-[#060c1a]">
         <NavBar />
         <main className="flex-1 relative z-10">{children}</main>
-        <footer className="border-t border-white/5 py-6 text-center text-xs text-slate-600">
-          <p>FIFA World Cup 2026 Dashboard · Built with ❤️ · All times in SAST (UTC+2)</p>
-          <p className="mt-1 text-slate-700">USA · Canada · Mexico · June 11 – July 19, 2026</p>
+        <footer className="border-t border-white/8 py-8 text-center text-xs text-slate-600">
+          <p>FIFA World Cup 2026 Dashboard · All times shown in SAST (UTC+2)</p>
+          <p className="mt-1 text-slate-700">USA · Canada · Mexico · June 11 to July 19, 2026</p>
         </footer>
       </body>
     </html>

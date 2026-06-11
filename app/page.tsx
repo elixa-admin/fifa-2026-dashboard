@@ -9,7 +9,7 @@ export default function HomePage() {
   const todayMatches = getTodaysMatches();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+    <div className="mx-auto max-w-7xl space-y-10 px-4 py-6 md:py-8">
       {/* Hero */}
       <HeroBanner />
 
@@ -24,7 +24,7 @@ export default function HomePage() {
             subtitle={`${todayMatches.length} match${todayMatches.length > 1 ? "es" : ""} · All times in SAST`}
             emoji="🔴"
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {todayMatches.map((m) => (
               <MatchCard key={m.id} match={m} showAdmin />
             ))}
@@ -40,7 +40,7 @@ export default function HomePage() {
             subtitle="June 11, 2026 · 21:00 SAST · Estadio Azteca, Mexico City"
             emoji="🎉"
           />
-          <div className="mt-4 max-w-lg">
+          <div className="mt-5 max-w-xl">
             <MatchCard
               match={GROUP_FIXTURES.find((m) => m.id === "A1")!}
               expanded
@@ -57,7 +57,7 @@ export default function HomePage() {
           subtitle="12 groups · 48 teams · Top 2 + best 8 third-place advance"
           emoji="⚽"
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {GROUPS.map((g) => (
             <GroupCard key={g} group={g} />
           ))}
@@ -65,12 +65,12 @@ export default function HomePage() {
       </section>
 
       {/* Tournament odds + upcoming */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TournamentOdds />
 
         <section>
           <SectionHeader title="Upcoming Fixtures" subtitle="Next matches · SAST times" emoji="🗓" />
-          <div className="space-y-3 mt-4">
+          <div className="mt-5 space-y-4">
             {GROUP_FIXTURES.filter((m) => m.status === "upcoming")
               .slice(0, 6)
               .map((m) => (
@@ -85,11 +85,13 @@ export default function HomePage() {
 
 function SectionHeader({ title, subtitle, emoji }: { title: string; subtitle: string; emoji: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="text-2xl mt-0.5">{emoji}</span>
+    <div className="flex items-start gap-4">
+      <span className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] text-xl">
+        {emoji}
+      </span>
       <div>
-        <h2 className="text-xl font-black text-white">{title}</h2>
-        <p className="text-slate-500 text-sm">{subtitle}</p>
+        <h2 className="text-2xl font-black text-white">{title}</h2>
+        <p className="mt-1 text-sm leading-6 text-slate-500">{subtitle}</p>
       </div>
     </div>
   );

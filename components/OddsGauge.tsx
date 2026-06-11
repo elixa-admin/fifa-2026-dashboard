@@ -1,5 +1,5 @@
 "use client";
-import { getWinProbability, getTeam } from "@/lib/data/teams";
+import { getMatchInsight, getTeam } from "@/lib/data/teams";
 import TeamFlag from "./TeamFlag";
 
 interface Props {
@@ -8,147 +8,82 @@ interface Props {
 }
 
 export default function OddsGauge({ homeCode, awayCode }: Props) {
-  const { home, draw, away } = getWinProbability(homeCode, awayCode);
+  const insight = getMatchInsight(homeCode, awayCode);
   const homeTeam = getTeam(homeCode);
   const awayTeam = getTeam(awayCode);
+  const edgeLabel =
+    insight.edge === "draw"
+      ? "Too close to split"
+      : insight.edge === "home"
+      ? `${homeTeam.shortName} edge`
+      : `${awayTeam.shortName} edge`;
+  const confidenceTone =
+    insight.intensity === "strong"
+      ? "High-confidence call"
+      : insight.intensity === "clear"
+      ? "Clear analytical edge"
+      : "Marginal advantage";
 
-  // Thermometer bar
   return (
-    <div className="w-full space-y-3">
-      {/* Header label */}
-      <p className="text-center text-xs text-slate-400 uppercase tracking-widest font-semibold">Win Probability</p>
-
-      {/* Bar gauge */}
-      <div className="relative h-8 rounded-full overflow-hidden bg-slate-800/60 border border-slate-700/40">
-        {/* Home fill */}
-        <div
-          className="absolute inset-y-0 left-0 transition-all duration-1000 ease-out flex items-center justify-end pr-2"
-          style={{
-            width: `${home}%`,
-            background: `linear-gradient(90deg, ${homeTeam.color}cc, ${homeTeam.color})`,
-          }}
-        >
-          {home > 14 && (
-            <span className="text-white text-xs font-bold drop-shadow">{home}%</span>
-          )}
+    <div className="space-y-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Win outlook</p>
+          <p className="mt-1 text-sm font-semibold text-white">{edgeLabel}</p>
         </div>
-        {/* Draw zone */}
-        <div
-          className="absolute inset-y-0 bg-slate-600/80 flex items-center justify-center"
-          style={{ left: `${home}%`, width: `${draw}%` }}
-        >
-          {draw > 8 && (
-            <span className="text-slate-200 text-xs font-semibold">{draw}%</span>
-          )}
-        </div>
-        {/* Away fill */}
-        <div
-          className="absolute inset-y-0 right-0 transition-all duration-1000 ease-out flex items-center justify-start pl-2"
-          style={{
-            width: `${away}%`,
-            background: `linear-gradient(90deg, ${awayTeam.color}, ${awayTeam.color}cc)`,
-          }}
-        >
-          {away > 14 && (
-            <span className="text-white text-xs font-bold drop-shadow">{away}%</span>
-          )}
+        <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-200">
+          {confidenceTone}
         </div>
       </div>
 
-      {/* Labels */}
-      <div className="flex justify-between items-center text-xs text-slate-400">
-        <div className="flex items-center gap-1.5">
-          <TeamFlag code={homeCode} size="xs" />
-          <span className="font-medium">{homeTeam.shortName}</span>
-        </div>
-        <span className="text-slate-500">Draw {draw}%</span>
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium">{awayTeam.shortName}</span>
-          <TeamFlag code={awayCode} size="xs" />
+      <div className="overflow-hidden rounded-2xl border border-white/8 bg-slate-950/60">
+        <div className="relative h-11">
+          <div
+            className="absolute inset-y-0 left-0 flex items-center justify-start px-3"
+            style={{
+              width: `${insight.home}%`,
+              background: `linear-gradient(90deg, ${homeTeam.color}f0, ${homeTeam.color}b8)`,
+            }}
+          >
+            <span className="text-sm font-bold text-white">{insight.home}%</span>
+          </div>
+          <div
+            className="absolute inset-y-0 flex items-center justify-center bg-white/10 backdrop-blur-sm"
+            style={{ left: `${insight.home}%`, width: `${insight.draw}%` }}
+          >
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">Draw {insight.draw}%</span>
+          </div>
+          <div
+            className="absolute inset-y-0 right-0 flex items-center justify-end px-3"
+            style={{
+              width: `${insight.away}%`,
+              background: `linear-gradient(90deg, ${awayTeam.color}b5, ${awayTeam.color}f2)`,
+            }}
+          >
+            <span className="text-sm font-bold text-white">{insight.away}%</span>
+          </div>
         </div>
       </div>
 
-      {/* Semicircle odometer */}
-      <OdometerGauge homeCode={homeCode} awayCode={awayCode} homePercent={home} awayPercent={away} />
-    </div>
-  );
-}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-sm">
+        <div className="flex items-center gap-2 min-w-0">
+          <TeamFlag code={homeCode} size="xs" variant="card" />
+          <span className="truncate font-medium text-slate-200">{homeTeam.shortName}</span>
+        </div>
+        <span className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Model split</span>
+        <div className="flex items-center justify-end gap-2 min-w-0">
+          <span className="truncate font-medium text-slate-200">{awayTeam.shortName}</span>
+          <TeamFlag code={awayCode} size="xs" variant="card" />
+        </div>
+      </div>
 
-function OdometerGauge({
-  homeCode,
-  awayCode,
-  homePercent,
-  awayPercent,
-}: {
-  homeCode: string;
-  awayCode: string;
-  homePercent: number;
-  awayPercent: number;
-}) {
-  const homeTeam = getTeam(homeCode);
-  const awayTeam = getTeam(awayCode);
-
-  const R = 70;
-  const cx = 100;
-  const cy = 90;
-  const angle = 180 - (homePercent / 100) * 180; // degrees (180° = full away, 0° = full home)
-  const rad = (angle * Math.PI) / 180;
-  const nx = cx + R * Math.cos(rad);
-  const ny = cy - R * Math.sin(rad);
-
-  // Arc path helper
-  function arcPath(startAngle: number, endAngle: number, r: number, color: string) {
-    const s = (startAngle * Math.PI) / 180;
-    const e = (endAngle * Math.PI) / 180;
-    const x1 = cx + r * Math.cos(s);
-    const y1 = cy - r * Math.sin(s);
-    const x2 = cx + r * Math.cos(e);
-    const y2 = cy - r * Math.sin(e);
-    const large = endAngle - startAngle > 180 ? 1 : 0;
-    return (
-      <path
-        d={`M ${x1} ${y1} A ${r} ${r} 0 ${large} 0 ${x2} ${y2}`}
-        fill="none"
-        stroke={color}
-        strokeWidth="14"
-        strokeLinecap="round"
-      />
-    );
-  }
-
-  return (
-    <div className="flex justify-center mt-1">
-      <svg viewBox="0 30 200 75" className="w-full max-w-[220px] h-auto">
-        {/* Background arc */}
-        {arcPath(0, 180, R, "#1e293b")}
-        {/* Away arc */}
-        {arcPath(0, 180 - (homePercent / 100) * 180, R, awayTeam.color + "aa")}
-        {/* Home arc */}
-        {arcPath(180 - (homePercent / 100) * 180, 180, R, homeTeam.color + "dd")}
-
-        {/* Needle */}
-        <line
-          x1={cx}
-          y1={cy}
-          x2={nx}
-          y2={ny}
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          className="drop-shadow-lg"
-          style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.6))" }}
-        />
-        {/* Pivot */}
-        <circle cx={cx} cy={cy} r="5" fill="white" className="drop-shadow" />
-
-        {/* Labels */}
-        <text x="30" y="88" fill={homeTeam.color} fontSize="9" fontWeight="bold" textAnchor="middle">
-          {homePercent}%
-        </text>
-        <text x="170" y="88" fill={awayTeam.color} fontSize="9" fontWeight="bold" textAnchor="middle">
-          {awayPercent}%
-        </text>
-      </svg>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {insight.keyDrivers.map((driver) => (
+          <div key={driver} className="rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2 text-xs leading-5 text-slate-300">
+            {driver}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

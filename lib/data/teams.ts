@@ -1,3 +1,5 @@
+import { TEAM_EXTRAS } from "./teamExtras";
+
 export interface Team {
   code: string;        // FIFA code (e.g. "ARG")
   name: string;        // Full name
@@ -574,41 +576,211 @@ export const TEAMS: Record<string, Team> = {
 
 export const TEAM_LIST = Object.values(TEAMS);
 
+const STAGE_RATINGS: Record<string, number> = {
+  "Group stage": 0.18,
+  "Round of 32": 0.38,
+  "Round of 16": 0.52,
+  "Quarter-finals": 0.68,
+  "Semi-finals": 0.82,
+  Final: 0.93,
+  Champions: 1,
+};
+
+const HOST_BONUS: Record<string, number> = {
+  USA: 0.05,
+  CAN: 0.045,
+  MEX: 0.06,
+};
+
+export interface MatchInsight {
+  home: number;
+  draw: number;
+  away: number;
+  homeGoals: number;
+  awayGoals: number;
+  edge: "home" | "away" | "draw";
+  confidence: number;
+  intensity: "slight" | "clear" | "strong";
+  totalGoals: number;
+  narrative: string;
+  keyDrivers: string[];
+}
+
 export function getTeam(code: string): Team {
   return TEAMS[code] || TEAMS.MEX; // fallback
 }
 
-export function getWinProbability(homeCode: string, awayCode: string): { home: number; draw: number; away: number } {
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function sigmoid(value: number) {
+  return 1 / (1 + Math.exp(-value));
+}
+
+function getFormScore(code: string) {
+  const recentForm = TEAM_EXTRAS[code]?.recentForm;
+  if (!recentForm?.length) return 0.5;
+
+  const weightedPoints = recentForm.reduce((total, result, index) => {
+    const weight = 1 + (recentForm.length - index - 1) * 0.06;
+    const score = result === "W" ? 1 : result === "D" ? 0.45 : 0;
+    return total + score * weight;
+  }, 0);
+  const maxPoints = recentForm.reduce((total, _, index) => total + (1 + (recentForm.length - index - 1) * 0.06), 0);
+
+  return weightedPoints / maxPoints;
+}
+
+function parseSquadValue(value?: string) {
+  if (!value) return 110;
+  const numeric = Number.parseFloat(value.replace(/[^\d.]/g, ""));
+  return Number.isFinite(numeric) ? numeric : 110;
+}
+
+function getPredictionScore(code: string) {
+  const stage = TEAM_EXTRAS[code]?.prediction;
+  return stage ? STAGE_RATINGS[stage] ?? 0.42 : 0.42;
+}
+
+function getQualifyingAttack(code: string) {
+  const goalsFor = TEAM_EXTRAS[code]?.qualifyingGoals;
+  if (!goalsFor) return 0.45;
+  return clamp(goalsFor / 40, 0.2, 1);
+}
+
+function getQualifyingResistance(code: string) {
+  const goalsAgainst = TEAM_EXTRAS[code]?.qualifyingConceded;
+  if (goalsAgainst === undefined) return 0.5;
+  return clamp(1 - goalsAgainst / 24, 0.15, 0.95);
+}
+
+function getCompositeRating(code: string) {
+  const team = getTeam(code);
+  const rankScore = clamp((70 - Math.min(team.fifaRank, 70)) / 70, 0.05, 1);
+  const oddsScore = clamp(Math.sqrt(team.tournamentOdds / 12), 0.05, 1);
+  const formScore = getFormScore(code);
+  const squadScore = clamp(parseSquadValue(TEAM_EXTRAS[code]?.squadValue) / 950, 0.05, 1);
+  const predictionScore = getPredictionScore(code);
+  const attackScore = getQualifyingAttack(code);
+  const resistanceScore = getQualifyingResistance(code);
+
+  return (
+    rankScore * 0.24 +
+    oddsScore * 0.18 +
+    formScore * 0.18 +
+    squadScore * 0.11 +
+    predictionScore * 0.11 +
+    attackScore * 0.1 +
+    resistanceScore * 0.08
+  );
+}
+
+function getRecentTrendLabel(code: string) {
+  const form = TEAM_EXTRAS[code]?.recentForm;
+  if (!form?.length) return "arrive with steady form";
+
+  const wins = form.filter((result) => result === "W").length;
+  const losses = form.filter((result) => result === "L").length;
+
+  if (wins >= 4) return "arrive in excellent form";
+  if (wins >= 3 && losses === 0) return "have been unbeaten in the recent run";
+  if (losses >= 2) return "have shown some volatility lately";
+  return "have looked competitive lately";
+}
+
+function roundTenth(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
+export function getMatchInsight(homeCode: string, awayCode: string): MatchInsight {
   const home = TEAMS[homeCode];
   const away = TEAMS[awayCode];
-  if (!home || !away) return { home: 33, draw: 34, away: 33 };
+  if (!home || !away) {
+    return {
+      home: 33,
+      draw: 34,
+      away: 33,
+      homeGoals: 1.1,
+      awayGoals: 1.1,
+      edge: "draw",
+      confidence: 0,
+      intensity: "slight",
+      totalGoals: 2.2,
+      narrative: "The model sees this one as too close to call.",
+      keyDrivers: ["Balanced baseline quality", "Limited comparative data", "Low-confidence projection"],
+    };
+  }
 
-  // Rating from FIFA rank (lower rank = better)
-  const homeRating = Math.pow(1 / home.fifaRank, 0.4);
-  const awayRating = Math.pow(1 / away.fifaRank, 0.4);
-  const total = homeRating + awayRating;
+  const homeRating = getCompositeRating(homeCode) + (HOST_BONUS[homeCode] ?? 0) + 0.02;
+  const awayRating = getCompositeRating(awayCode) + (HOST_BONUS[awayCode] ?? 0);
+  const ratingGap = homeRating - awayRating;
+  const drawBias = clamp(0.27 - Math.abs(ratingGap) * 0.12, 0.16, 0.3);
+  const decisiveShare = 1 - drawBias;
+  const homeShare = sigmoid(ratingGap * 5.8);
 
-  const homeWin = Math.round((homeRating / total) * 65); // 65% share for win/loss
-  const awayWin = Math.round((awayRating / total) * 65);
-  const draw = 100 - homeWin - awayWin;
+  let homeWin = Math.round(homeShare * decisiveShare * 100);
+  let draw = Math.round(drawBias * 100);
+  let awayWin = 100 - homeWin - draw;
 
-  return { home: homeWin, draw, away: awayWin };
+  if (awayWin < 0) {
+    awayWin = 0;
+    draw = 100 - homeWin;
+  }
+
+  const attackingIntent =
+    (getQualifyingAttack(homeCode) + getQualifyingAttack(awayCode)) * 0.85 +
+    (1 - (getQualifyingResistance(homeCode) + getQualifyingResistance(awayCode)) / 2) * 0.55;
+  const totalGoals = clamp(2.05 + attackingIntent + Math.abs(ratingGap) * 0.45, 2.0, 4.3);
+  const scoringBalance = sigmoid(ratingGap * 4.5);
+  const homeGoals = roundTenth(clamp(totalGoals * (0.44 + scoringBalance * 0.28), 0.4, 3.6));
+  const awayGoals = roundTenth(clamp(totalGoals - homeGoals, 0.3, 3.3));
+
+  const homeEdge = homeWin - awayWin;
+  const awayEdge = awayWin - homeWin;
+  const confidence = Math.max(Math.abs(homeEdge), Math.abs(awayEdge));
+  const edge = confidence <= 5 ? "draw" : homeEdge > 0 ? "home" : "away";
+  const intensity = confidence >= 24 ? "strong" : confidence >= 12 ? "clear" : "slight";
+
+  const strongerCode = homeRating >= awayRating ? homeCode : awayCode;
+  const weakerCode = strongerCode === homeCode ? awayCode : homeCode;
+  const strongerTeam = getTeam(strongerCode);
+  const weakerTeam = getTeam(weakerCode);
+
+  const keyDrivers = [
+    `${strongerTeam.shortName} ${getRecentTrendLabel(strongerCode)}`,
+    `${strongerTeam.shortName} carry the stronger tournament projection and squad profile`,
+    `${weakerTeam.shortName} still have upset value through ${weakerTeam.keyPlayer}`,
+  ];
+
+  const narrative =
+    edge === "draw"
+      ? `${home.shortName} and ${away.shortName} rate almost level, with the model leaning toward a tense, fine-margin match.`
+      : edge === "home"
+      ? `${home.shortName} hold the edge through form, squad profile and projected tournament strength.`
+      : `${away.shortName} profile as the sharper side on recent trend, tournament outlook and overall team quality.`;
+
+  return {
+    home: homeWin,
+    draw,
+    away: awayWin,
+    homeGoals,
+    awayGoals,
+    edge,
+    confidence,
+    intensity,
+    totalGoals: roundTenth(totalGoals),
+    narrative,
+    keyDrivers,
+  };
+}
+
+export function getWinProbability(homeCode: string, awayCode: string): { home: number; draw: number; away: number } {
+  const { home, draw, away } = getMatchInsight(homeCode, awayCode);
+  return { home, draw, away };
 }
 
 export function getGoalPrediction(homeCode: string, awayCode: string): { home: number; away: number } {
-  const home = TEAMS[homeCode];
-  const away = TEAMS[awayCode];
-  if (!home || !away) return { home: 1, away: 1 };
-
-  const homeStrength = 1 / Math.sqrt(home.fifaRank);
-  const awayStrength = 1 / Math.sqrt(away.fifaRank);
-  const avgGoals = 2.7; // avg goals per WC game
-
-  const homeExpected = (homeStrength / (homeStrength + awayStrength)) * avgGoals * 1.15;
-  const awayExpected = (awayStrength / (homeStrength + awayStrength)) * avgGoals;
-
-  return {
-    home: Math.max(0, Math.round(homeExpected * 10) / 10),
-    away: Math.max(0, Math.round(awayExpected * 10) / 10),
-  };
+  const { homeGoals, awayGoals } = getMatchInsight(homeCode, awayCode);
+  return { home: homeGoals, away: awayGoals };
 }

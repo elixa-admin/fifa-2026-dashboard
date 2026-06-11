@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Match } from "@/lib/data/fixtures";
-import { getTeam } from "@/lib/data/teams";
+import { TEAM_EXTRAS } from "@/lib/data/teamExtras";
+import { getMatchInsight, getTeam } from "@/lib/data/teams";
 import { useScoreStore } from "@/lib/store";
 import TeamFlag from "./TeamFlag";
 import OddsGauge from "./OddsGauge";
@@ -14,9 +15,9 @@ interface Props {
 }
 
 const STATUS_BADGE = {
-  upcoming: { label: "Upcoming", cls: "bg-slate-700 text-slate-300" },
-  live: { label: "● LIVE", cls: "bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse" },
-  finished: { label: "FT", cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" },
+  upcoming: { label: "Upcoming", cls: "border-white/10 bg-white/[0.06] text-slate-200" },
+  live: { label: "Live", cls: "border-red-400/35 bg-red-500/12 text-red-300" },
+  finished: { label: "Final", cls: "border-emerald-400/30 bg-emerald-500/12 text-emerald-300" },
 };
 
 export default function MatchCard({ match, expanded = false, showAdmin = false }: Props) {
@@ -29,7 +30,10 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
   const liveMatch = useScoreStore((s) => s.matches.find((m) => m.id === match.id) || match);
   const home = getTeam(liveMatch.homeTeam);
   const away = getTeam(liveMatch.awayTeam);
+  const insight = useMemo(() => getMatchInsight(liveMatch.homeTeam, liveMatch.awayTeam), [liveMatch.awayTeam, liveMatch.homeTeam]);
   const badge = STATUS_BADGE[liveMatch.status];
+  const likelyWinner = insight.edge === "draw" ? "Level" : insight.edge === "home" ? home.shortName : away.shortName;
+  const predictedScore = `${insight.homeGoals.toFixed(1)}-${insight.awayGoals.toFixed(1)}`;
 
   const handleUpdateScore = () => {
     const h = parseInt(hs);
@@ -37,147 +41,272 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
     if (!isNaN(h) && !isNaN(a) && h >= 0 && a >= 0) {
       updateScore(liveMatch.id, h, a, "finished");
       setAdminOpen(false);
-      setHs(""); setAs("");
+      setHs("");
+      setAs("");
     }
   };
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden border border-white/5 bg-gradient-to-br from-slate-800/60 to-slate-900/80 backdrop-blur-sm hover:border-white/10 transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-      {/* Live glow */}
-      {liveMatch.status === "live" && (
-        <div className="absolute inset-0 rounded-2xl border-2 border-red-500/30 animate-pulse pointer-events-none" />
-      )}
+    <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/8 bg-[linear-gradient(160deg,rgba(15,23,42,0.94),rgba(2,6,23,0.96))] shadow-[0_22px_60px_rgba(2,6,23,0.4)] transition-all duration-300 hover:border-white/14">
+      <div className="pointer-events-none absolute inset-0 opacity-70">
+        <div className="absolute -left-10 top-0 h-48 w-48 rounded-full blur-3xl" style={{ background: `${home.color}18` }} />
+        <div className="absolute -right-10 bottom-0 h-48 w-48 rounded-full blur-3xl" style={{ background: `${away.color}18` }} />
+      </div>
+      {liveMatch.status === "live" && <div className="absolute inset-0 border border-red-400/25 shadow-[inset_0_0_28px_rgba(248,113,113,0.14)]" />}
 
-      {/* Main content */}
-      <div className="p-4 cursor-pointer" onClick={() => setOpen(!open)}>
-        {/* Top row: group/matchday + status badge + date/time */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-slate-500 font-medium">
-            Group {liveMatch.group} · MD{liveMatch.matchday}
-          </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${badge.cls}`}>
-            {badge.label}
-          </span>
+      <div className="relative p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Group {liveMatch.group} • Matchday {liveMatch.matchday}
+            </p>
+            <p className="mt-1 text-sm text-slate-300">{liveMatch.venue}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-medium text-slate-300">
+              {new Date(liveMatch.date + "T12:00:00").toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}
+            </span>
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-200">
+              {liveMatch.timeSAST}
+            </span>
+            <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${badge.cls}`}>
+              {badge.label}
+            </span>
+          </div>
         </div>
 
-        {/* Teams + Score row */}
-        <div className="flex items-center gap-2">
-          {/* Home team */}
-          <div className="flex-1 flex items-center gap-2 min-w-0">
-            <TeamFlag code={liveMatch.homeTeam} size="sm" />
-            <span className="text-white font-bold text-sm truncate leading-tight">{home.shortName}</span>
-          </div>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+          <TeamSide code={liveMatch.homeTeam} side="home" accent={home.color} />
 
-          {/* Score block */}
-          <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900/60 border border-slate-700/40 min-w-[90px] justify-center">
+          <div className="mx-auto flex min-w-[168px] flex-col items-center rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-5 py-4 text-center backdrop-blur-md">
             {liveMatch.status !== "upcoming" ? (
-              <>
-                <span className={`text-2xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-400" : "text-white"}`}>
+              <div className="flex items-end gap-2">
+                <span className={`text-5xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.homeScore}
                 </span>
-                <span className="text-slate-500 text-lg font-light">–</span>
-                <span className={`text-2xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-400" : "text-white"}`}>
+                <span className="pb-2 text-2xl font-light text-slate-500">-</span>
+                <span className={`text-5xl font-black tabular-nums ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.awayScore}
                 </span>
-              </>
+              </div>
             ) : (
-              <span className="text-slate-400 text-sm font-semibold">vs</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-black text-white">{insight.home}%</span>
+                <span className="text-xs uppercase tracking-[0.24em] text-slate-500">to</span>
+                <span className="text-2xl font-black text-white">{insight.away}%</span>
+              </div>
+            )}
+            <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">
+              {liveMatch.status === "upcoming" ? "Forecast edge" : "Match state"}
+            </p>
+            <p className="mt-3 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium text-cyan-100">
+              Predicted score {predictedScore}
+            </p>
+          </div>
+
+          <TeamSide code={liveMatch.awayTeam} side="away" accent={away.color} />
+        </div>
+
+        <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Match pulse</p>
+              <p className="mt-1 text-base font-semibold text-white">{likelyWinner === "Level" ? "Fine margins everywhere" : `${likelyWinner} lead the model`}</p>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-300">{insight.narrative}</p>
+            </div>
+            <div className="grid min-w-[220px] grid-cols-2 gap-2">
+              <MetricPill label="Win edge" value={likelyWinner} tone="cyan" />
+              <MetricPill label="Goal line" value={predictedScore} tone="amber" />
+              <MetricPill label="Total goals" value={insight.totalGoals.toFixed(1)} tone="emerald" />
+              <MetricPill label="Draw chance" value={`${insight.draw}%`} tone="slate" />
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setOpen(!open)}
+          className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-white/[0.06]"
+        >
+          {open ? "Hide analytics" : "Open analytics and team detail"}
+        </button>
+      </div>
+
+      {open && (
+        <div className="relative border-t border-white/8 px-5 pb-5 pt-5">
+          <div className="grid gap-5">
+            <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.04] p-4">
+              <OddsGauge homeCode={liveMatch.homeTeam} awayCode={liveMatch.awayTeam} />
+            </div>
+            <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.04] p-4">
+              <GoalPredictor homeCode={liveMatch.homeTeam} awayCode={liveMatch.awayTeam} />
+            </div>
+            <div className="grid gap-4 xl:grid-cols-2">
+              <TeamFactCard code={liveMatch.homeTeam} />
+              <TeamFactCard code={liveMatch.awayTeam} />
+            </div>
+
+            {showAdmin && (
+              <div className="rounded-[1.4rem] border border-white/8 bg-slate-950/50 p-4">
+                {!adminOpen ? (
+                  <button
+                    onClick={() => setAdminOpen(true)}
+                    className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.06]"
+                  >
+                    Update final score
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={hs}
+                      onChange={(e) => setHs(e.target.value)}
+                      placeholder={home.shortName}
+                      className="min-w-[120px] flex-1 rounded-xl border border-white/10 bg-slate-900 px-3 py-3 text-center text-sm text-white outline-none"
+                    />
+                    <span className="text-slate-500">-</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={as_}
+                      onChange={(e) => setAs(e.target.value)}
+                      placeholder={away.shortName}
+                      className="min-w-[120px] flex-1 rounded-xl border border-white/10 bg-slate-900 px-3 py-3 text-center text-sm text-white outline-none"
+                    />
+                    <button
+                      onClick={handleUpdateScore}
+                      className="rounded-xl bg-amber-400 px-4 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-300"
+                    >
+                      Save
+                    </button>
+                    <button onClick={() => setAdminOpen(false)} className="px-2 py-2 text-sm text-slate-400 hover:text-white">
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-          {/* Away team */}
-          <div className="flex-1 flex items-center gap-2 justify-end min-w-0">
-            <span className="text-white font-bold text-sm truncate text-right leading-tight">{away.shortName}</span>
-            <TeamFlag code={liveMatch.awayTeam} size="sm" />
-          </div>
         </div>
+      )}
+    </article>
+  );
+}
 
-        {/* Date/Time + Venue */}
-        <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500">
-          <span>{new Date(liveMatch.date + "T12:00:00").toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}</span>
-          <span className="text-amber-400/80 font-medium">{liveMatch.timeSAST}</span>
-          <span className="truncate max-w-[120px] text-right">{liveMatch.venue}</span>
-        </div>
+function TeamSide({ code, side, accent }: { code: string; side: "home" | "away"; accent: string }) {
+  const team = getTeam(code);
+  const extras = TEAM_EXTRAS[code];
+  const form = extras?.recentForm ?? [];
 
-        {/* Expand hint */}
-        <div className="flex justify-center mt-2">
-          <span className="text-slate-600 text-xs group-hover:text-slate-400 transition-colors">
-            {open ? "▲ Hide details" : "▼ Odds & Predictions"}
-          </span>
+  return (
+    <div className={`flex flex-col gap-3 ${side === "away" ? "lg:items-end lg:text-right" : ""}`}>
+      <div className={`flex items-center gap-3 ${side === "away" ? "lg:flex-row-reverse" : ""}`}>
+        <TeamFlag code={code} size="lg" variant="hero" />
+        <div>
+          <p className="text-xl font-black text-white">{team.shortName}</p>
+          <p className="text-sm text-slate-400">FIFA rank #{team.fifaRank}</p>
         </div>
       </div>
 
-      {/* Expanded section */}
-      {open && (
-        <div className="border-t border-white/5 px-4 pb-4 pt-3 space-y-5">
-          <OddsGauge homeCode={liveMatch.homeTeam} awayCode={liveMatch.awayTeam} />
-          <div className="border-t border-white/5 pt-4">
-            <GoalPredictor homeCode={liveMatch.homeTeam} awayCode={liveMatch.awayTeam} />
-          </div>
+      <div className={`flex flex-wrap gap-2 ${side === "away" ? "lg:justify-end" : ""}`}>
+        <MiniTag label={team.confederation} accent={accent} />
+        <MiniTag label={extras?.prediction ?? "Projected run"} accent={accent} />
+        <MiniTag label={team.keyPlayer} accent={accent} />
+      </div>
 
-          {/* Team facts */}
-          <div className="grid grid-cols-2 gap-3 border-t border-white/5 pt-4">
-            <TeamFactCard code={liveMatch.homeTeam} />
-            <TeamFactCard code={liveMatch.awayTeam} />
-          </div>
-
-          {/* Admin score update */}
-          {showAdmin && (
-            <div className="border-t border-white/5 pt-3">
-              {!adminOpen ? (
-                <button
-                  onClick={() => setAdminOpen(true)}
-                  className="w-full text-xs text-slate-500 hover:text-slate-300 py-1.5 rounded-lg border border-slate-700/40 hover:border-slate-600/60 transition-colors"
-                >
-                  ✎ Update Score
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number" min="0" max="20" value={hs} onChange={(e) => setHs(e.target.value)}
-                    placeholder={home.shortName}
-                    className="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm text-center"
-                  />
-                  <span className="text-slate-500">–</span>
-                  <input
-                    type="number" min="0" max="20" value={as_} onChange={(e) => setAs(e.target.value)}
-                    placeholder={away.shortName}
-                    className="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm text-center"
-                  />
-                  <button onClick={handleUpdateScore}
-                    className="bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-2 rounded-lg text-sm transition-colors">
-                    ✓
-                  </button>
-                  <button onClick={() => setAdminOpen(false)}
-                    className="text-slate-500 hover:text-slate-300 px-2 py-2 text-sm">✕</button>
-                </div>
-              )}
-            </div>
-          )}
+      <div className={`flex flex-wrap items-center gap-2 ${side === "away" ? "lg:justify-end" : ""}`}>
+        <span className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Recent form</span>
+        <div className="flex gap-1">
+          {form.map((result, index) => (
+            <span
+              key={`${code}-${result}-${index}`}
+              className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${
+                result === "W"
+                  ? "bg-emerald-500/18 text-emerald-300"
+                  : result === "D"
+                  ? "bg-amber-500/16 text-amber-200"
+                  : "bg-rose-500/16 text-rose-200"
+              }`}
+            >
+              {result}
+            </span>
+          ))}
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
+
+function MiniTag({ label, accent }: { label: string; accent: string }) {
+  return (
+    <span className="rounded-full border px-3 py-1 text-[11px] font-medium text-slate-200" style={{ borderColor: `${accent}55`, background: `${accent}16` }}>
+      {label}
+    </span>
+  );
+}
+
+function MetricPill({ label, value, tone }: { label: string; value: string; tone: "cyan" | "amber" | "emerald" | "slate" }) {
+  const tones = {
+    cyan: "border-cyan-400/20 bg-cyan-400/10 text-cyan-100",
+    amber: "border-amber-400/20 bg-amber-400/10 text-amber-100",
+    emerald: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+    slate: "border-white/10 bg-white/[0.05] text-slate-100",
+  };
+
+  return (
+    <div className={`rounded-2xl border px-3 py-2 ${tones[tone]}`}>
+      <p className="text-[11px] uppercase tracking-[0.2em] opacity-70">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
     </div>
   );
 }
 
 function TeamFactCard({ code }: { code: string }) {
   const team = getTeam(code);
+  const extras = TEAM_EXTRAS[code];
+
   return (
-    <div className="rounded-xl bg-slate-800/40 border border-slate-700/30 p-3 space-y-2">
-      <div className="flex items-center gap-2">
-        <TeamFlag code={code} size="xs" />
-        <span className="text-white text-xs font-bold">{team.shortName}</span>
-        <span className="ml-auto text-xs text-amber-400 font-semibold">#{team.fifaRank}</span>
+    <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.04] p-4">
+      <div className="flex items-start gap-3">
+        <TeamFlag code={code} size="sm" variant="card" />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-bold text-white">{team.shortName}</h3>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[11px] font-medium text-slate-300">
+              #{team.fifaRank}
+            </span>
+            {extras?.squadValue && (
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[11px] font-medium text-slate-300">
+                {extras.squadValue}
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-sm leading-6 text-slate-300">{extras?.groupAnalysis ?? team.fact}</p>
+        </div>
       </div>
-      <p className="text-xs text-slate-400 leading-snug">{team.fact}</p>
-      <div className="border-t border-slate-700/30 pt-2">
-        <p className="text-xs text-slate-300 italic">&quot;{team.quote}&quot;</p>
-        <p className="text-xs text-slate-500 mt-1">— {team.quoteSource}</p>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <FactStat label="Coach" value={extras?.coachName ?? team.quoteSource} />
+        <FactStat label="Key player" value={team.keyPlayer} />
+        <FactStat label="Projected run" value={extras?.prediction ?? "Group stage"} />
       </div>
-      <div className="text-xs text-slate-500">
-        <span className="text-slate-400 font-medium">Key Player: </span>
-        <span className="text-amber-400">{team.keyPlayer}</span>
+
+      <div className="mt-4 rounded-2xl border border-white/8 bg-slate-950/45 p-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Locker-room line</p>
+        <p className="mt-2 text-sm leading-6 text-slate-200">&quot;{team.quote}&quot;</p>
+        <p className="mt-2 text-xs text-slate-500">— {team.quoteSource}</p>
       </div>
+    </div>
+  );
+}
+
+function FactStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-1 text-sm font-medium text-slate-200">{value}</p>
     </div>
   );
 }
