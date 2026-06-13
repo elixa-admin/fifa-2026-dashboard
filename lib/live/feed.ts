@@ -117,12 +117,12 @@ export function buildLiveFeedPayload(): LiveFeedPayload {
         minute: null,
         detail: `${getTeam(firstMatch.homeTeam).shortName} vs ${getTeam(firstMatch.awayTeam).shortName} is queued for live updates.`,
         createdAt: now,
-        source: "mock" as const,
+        source: "provider" as const,
       }
     : null;
 
   return {
-    source: "mock",
+    source: "provider",
     generatedAt: now,
     snapshot: buildLiveSnapshot(),
     events: demoEvent ? [demoEvent] : [],
