@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Match, GROUP_FIXTURES } from "./data/fixtures";
+import { Match, getTournamentFixtures } from "./data/fixtures";
 
 interface GroupStanding {
   team: string;
@@ -61,7 +61,7 @@ export function computeStandings(matches: Match[], group: string): GroupStanding
 export const useScoreStore = create<ScoreStore>()(
   persist(
     (set, get) => ({
-      matches: GROUP_FIXTURES,
+      matches: getTournamentFixtures(),
 
       updateScore: (matchId, homeScore, awayScore, status = "finished") =>
         set((state) => ({

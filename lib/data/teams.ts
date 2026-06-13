@@ -1,4 +1,4 @@
-import { GROUP_FIXTURES } from "./fixtures";
+import { getTournamentFixtures } from "./fixtures";
 import { TEAM_EXTRAS } from "./teamExtras";
 
 export interface Team {
@@ -645,7 +645,7 @@ function getPredictionScore(code: string) {
 }
 
 export function getRecentForm(code: string, limit = 5): ("W" | "D" | "L")[] {
-  const history = GROUP_FIXTURES
+  const history = getTournamentFixtures()
     .filter((match) => match.status === "finished" && (match.homeTeam === code || match.awayTeam === code))
     .sort((a, b) => b.matchNumber - a.matchNumber)
     .map((match) => {

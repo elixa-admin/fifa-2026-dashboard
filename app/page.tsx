@@ -4,10 +4,11 @@ import LiveTicker from "@/components/LiveTicker";
 import GroupCard from "@/components/GroupCard";
 import TournamentOdds from "@/components/TournamentOdds";
 import MatchCard from "@/components/MatchCard";
-import { GROUP_FIXTURES, GROUPS, getTodaysMatches } from "@/lib/data/fixtures";
+import { GROUPS, getTodaysMatches, getTournamentFixtures } from "@/lib/data/fixtures";
 
 export default function HomePage() {
   const todayMatches = getTodaysMatches();
+  const fixtures = getTournamentFixtures();
 
   return (
     <div className="mx-auto max-w-7xl space-y-10 px-4 py-6 md:py-8">
@@ -45,8 +46,8 @@ export default function HomePage() {
             emoji="🎉"
           />
           <div className="mt-5 max-w-xl">
-            <MatchCard
-              match={GROUP_FIXTURES.find((m) => m.id === "A1")!}
+              <MatchCard
+              match={fixtures.find((m) => m.id === "A1")!}
               expanded
               showAdmin
             />
@@ -75,7 +76,7 @@ export default function HomePage() {
         <section>
           <SectionHeader title="Upcoming Fixtures" subtitle="Next matches · SAST times" emoji="🗓" />
           <div className="mt-5 space-y-4">
-            {GROUP_FIXTURES.filter((m) => m.status === "upcoming")
+            {fixtures.filter((m) => m.status === "upcoming")
               .slice(0, 6)
               .map((m) => (
                 <MatchCard key={m.id} match={m} showAdmin />

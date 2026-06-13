@@ -1,4 +1,4 @@
-import { GROUP_FIXTURES } from "@/lib/data/fixtures";
+import { getTournamentFixtures } from "@/lib/data/fixtures";
 import { getMatchInsight, getRecentForm, getTeam } from "@/lib/data/teams";
 
 export type LiveEventType =
@@ -58,10 +58,11 @@ export interface LiveFeedPayload {
 }
 
 export function buildLiveSnapshot() {
-  const totalMatches = GROUP_FIXTURES.length;
-  const liveMatches = GROUP_FIXTURES.filter((match) => match.status === "live").length;
-  const finishedMatches = GROUP_FIXTURES.filter((match) => match.status === "finished").length;
-  const upcomingMatches = GROUP_FIXTURES.filter((match) => match.status === "upcoming").length;
+  const fixtures = getTournamentFixtures();
+  const totalMatches = fixtures.length;
+  const liveMatches = fixtures.filter((match) => match.status === "live").length;
+  const finishedMatches = fixtures.filter((match) => match.status === "finished").length;
+  const upcomingMatches = fixtures.filter((match) => match.status === "upcoming").length;
 
   return {
     totalMatches,
@@ -73,7 +74,7 @@ export function buildLiveSnapshot() {
 }
 
 function buildLiveMatchSummaries(): LiveMatchSummary[] {
-  return GROUP_FIXTURES.slice(0, 8).map((match) => {
+  return getTournamentFixtures().slice(0, 8).map((match) => {
     const home = getTeam(match.homeTeam);
     const away = getTeam(match.awayTeam);
     const insight = getMatchInsight(home.code, away.code);
@@ -107,7 +108,7 @@ function buildLiveMatchSummaries(): LiveMatchSummary[] {
 
 export function buildLiveFeedPayload(): LiveFeedPayload {
   const now = new Date().toISOString();
-  const firstMatch = GROUP_FIXTURES[0];
+  const firstMatch = getTournamentFixtures()[0];
   const demoEvent = firstMatch
     ? {
         id: `${firstMatch.id}-heartbeat`,

@@ -1,3 +1,5 @@
+import { FIFA_LIVE_RESULTS } from "./fifaLiveResults";
+
 export interface Match {
   id: string;
   group: string;
@@ -123,6 +125,13 @@ export const GROUP_FIXTURES: Match[] = [
 
 export const GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
+export function getTournamentFixtures(): Match[] {
+  return GROUP_FIXTURES.map((match) => {
+    const live = FIFA_LIVE_RESULTS[match.id];
+    return live ? { ...match, ...live } : match;
+  });
+}
+
 export function getSastDateString(date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Johannesburg",
@@ -133,15 +142,15 @@ export function getSastDateString(date = new Date()): string {
 }
 
 export function getGroupFixtures(group: string): Match[] {
-  return GROUP_FIXTURES.filter((m) => m.group === group);
+  return getTournamentFixtures().filter((m) => m.group === group);
 }
 
 export function getTodaysMatches(): Match[] {
   const today = getSastDateString();
-  return GROUP_FIXTURES.filter((m) => m.date === today);
+  return getTournamentFixtures().filter((m) => m.date === today);
 }
 
 export function getUpcomingMatches(count = 5): Match[] {
   const today = getSastDateString();
-  return GROUP_FIXTURES.filter((m) => m.date >= today && m.status !== "finished").slice(0, count);
+  return getTournamentFixtures().filter((m) => m.date >= today && m.status !== "finished").slice(0, count);
 }
