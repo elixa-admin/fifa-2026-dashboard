@@ -25,15 +25,15 @@ export interface Match {
 
 export const GROUP_FIXTURES: Match[] = [
   // ─── GROUP A ───────────────────────────────────────────────────────────
-  { id: "A1", group: "A", matchday: 1, homeTeam: "MEX", awayTeam: "RSA", date: "2026-06-11", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "Estadio Azteca", city: "Mexico City", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 1 },
-  { id: "A2", group: "A", matchday: 1, homeTeam: "KOR", awayTeam: "CZE", date: "2026-06-11", timeUTC: "02:00", timeSAST: "04:00 SAST (+1)", venue: "Estadio Akron", city: "Zapopan", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 2 },
+  { id: "A1", group: "A", matchday: 1, homeTeam: "MEX", awayTeam: "RSA", date: "2026-06-11", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "Estadio Azteca", city: "Mexico City", homeScore: 2, awayScore: 0, status: "finished", matchNumber: 1 },
+  { id: "A2", group: "A", matchday: 1, homeTeam: "KOR", awayTeam: "CZE", date: "2026-06-11", timeUTC: "02:00", timeSAST: "04:00 SAST (+1)", venue: "Estadio Akron", city: "Zapopan", homeScore: 2, awayScore: 1, status: "finished", matchNumber: 2 },
   { id: "A3", group: "A", matchday: 2, homeTeam: "CZE", awayTeam: "RSA", date: "2026-06-18", timeUTC: "16:00", timeSAST: "18:00 SAST", venue: "Mercedes-Benz Stadium", city: "Atlanta", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 13 },
   { id: "A4", group: "A", matchday: 2, homeTeam: "MEX", awayTeam: "KOR", date: "2026-06-18", timeUTC: "01:00", timeSAST: "03:00 SAST (+1)", venue: "Estadio Akron", city: "Zapopan", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 14 },
   { id: "A5", group: "A", matchday: 3, homeTeam: "CZE", awayTeam: "MEX", date: "2026-06-24", timeUTC: "01:00", timeSAST: "03:00 SAST (+1)", venue: "Estadio Azteca", city: "Mexico City", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 46 },
   { id: "A6", group: "A", matchday: 3, homeTeam: "RSA", awayTeam: "KOR", date: "2026-06-24", timeUTC: "01:00", timeSAST: "03:00 SAST (+1)", venue: "Estadio BBVA", city: "Guadalupe", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 47 },
 
   // ─── GROUP B ───────────────────────────────────────────────────────────
-  { id: "B1", group: "B", matchday: 1, homeTeam: "CAN", awayTeam: "BIH", date: "2026-06-12", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "BMO Field", city: "Toronto", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 3 },
+  { id: "B1", group: "B", matchday: 1, homeTeam: "CAN", awayTeam: "BIH", date: "2026-06-12", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "BMO Field", city: "Toronto", homeScore: 1, awayScore: 1, status: "finished", matchNumber: 3 },
   { id: "B2", group: "B", matchday: 1, homeTeam: "QAT", awayTeam: "SUI", date: "2026-06-13", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "Levi's Stadium", city: "Santa Clara", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 5 },
   { id: "B3", group: "B", matchday: 2, homeTeam: "SUI", awayTeam: "BIH", date: "2026-06-18", timeUTC: "19:00", timeSAST: "21:00 SAST", venue: "SoFi Stadium", city: "Inglewood", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 15 },
   { id: "B4", group: "B", matchday: 2, homeTeam: "CAN", awayTeam: "QAT", date: "2026-06-18", timeUTC: "22:00", timeSAST: "00:00 SAST (+1)", venue: "BC Place", city: "Vancouver", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 16 },
@@ -49,7 +49,7 @@ export const GROUP_FIXTURES: Match[] = [
   { id: "C6", group: "C", matchday: 3, homeTeam: "MAR", awayTeam: "HAI", date: "2026-06-24", timeUTC: "22:00", timeSAST: "00:00 SAST (+1)", venue: "Mercedes-Benz Stadium", city: "Atlanta", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 51 },
 
   // ─── GROUP D ───────────────────────────────────────────────────────────
-  { id: "D1", group: "D", matchday: 1, homeTeam: "USA", awayTeam: "PAR", date: "2026-06-12", timeUTC: "22:00", timeSAST: "00:00 SAST (+1)", venue: "SoFi Stadium", city: "Inglewood", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 4 },
+  { id: "D1", group: "D", matchday: 1, homeTeam: "USA", awayTeam: "PAR", date: "2026-06-12", timeUTC: "22:00", timeSAST: "00:00 SAST (+1)", venue: "SoFi Stadium", city: "Inglewood", homeScore: 4, awayScore: 1, status: "finished", matchNumber: 4 },
   { id: "D2", group: "D", matchday: 1, homeTeam: "AUS", awayTeam: "TUR", date: "2026-06-13", timeUTC: "01:00", timeSAST: "03:00 SAST (+1)", venue: "BC Place", city: "Vancouver", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 8 },
   { id: "D3", group: "D", matchday: 2, homeTeam: "USA", awayTeam: "AUS", date: "2026-06-19", timeUTC: "16:00", timeSAST: "18:00 SAST", venue: "Lumen Field", city: "Seattle", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 23 },
   { id: "D4", group: "D", matchday: 2, homeTeam: "TUR", awayTeam: "PAR", date: "2026-06-20", timeUTC: "00:00", timeSAST: "02:00 SAST (+1)", venue: "Levi's Stadium", city: "Santa Clara", homeScore: null, awayScore: null, status: "upcoming", matchNumber: 24 },

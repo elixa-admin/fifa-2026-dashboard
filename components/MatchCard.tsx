@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { Match } from "@/lib/data/fixtures";
 import { TEAM_EXTRAS } from "@/lib/data/teamExtras";
-import { getMatchInsight, getTeam } from "@/lib/data/teams";
+import { getMatchInsight, getRecentForm, getTeam } from "@/lib/data/teams";
 import { useScoreStore } from "@/lib/store";
 import TeamFlag from "./TeamFlag";
 import OddsGauge from "./OddsGauge";
@@ -220,7 +220,7 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
 function TeamSide({ code, side, accent }: { code: string; side: "home" | "away"; accent: string }) {
   const team = getTeam(code);
   const extras = TEAM_EXTRAS[code];
-  const form = extras?.recentForm ?? [];
+  const form = getRecentForm(code);
 
   return (
     <div className={`flex flex-col gap-3 ${side === "away" ? "lg:items-end lg:text-right" : ""}`}>

@@ -1,6 +1,5 @@
 import { GROUP_FIXTURES } from "@/lib/data/fixtures";
-import { TEAM_EXTRAS } from "@/lib/data/teamExtras";
-import { getMatchInsight, getTeam } from "@/lib/data/teams";
+import { getMatchInsight, getRecentForm, getTeam } from "@/lib/data/teams";
 
 export type LiveEventType =
   | "match_started"
@@ -78,8 +77,8 @@ function buildLiveMatchSummaries(): LiveMatchSummary[] {
     const home = getTeam(match.homeTeam);
     const away = getTeam(match.awayTeam);
     const insight = getMatchInsight(home.code, away.code);
-    const homeForm = TEAM_EXTRAS[home.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
-    const awayForm = TEAM_EXTRAS[away.code]?.recentForm?.filter((value) => value === "W").length ?? 0;
+    const homeForm = getRecentForm(home.code)?.filter((value) => value === "W").length ?? 0;
+    const awayForm = getRecentForm(away.code)?.filter((value) => value === "W").length ?? 0;
     const momentum = homeForm > awayForm ? "home" : awayForm > homeForm ? "away" : "balanced";
     const edge = homeForm === awayForm ? "Balanced matchup" : `${momentum === "home" ? home.shortName : away.shortName} carry the trend`;
     const score = match.homeScore !== null && match.awayScore !== null ? `${match.homeScore}–${match.awayScore}` : "0–0";

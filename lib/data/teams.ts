@@ -1,3 +1,4 @@
+import { GROUP_FIXTURES } from "./fixtures";
 import { TEAM_EXTRAS } from "./teamExtras";
 
 export interface Team {
@@ -619,8 +620,8 @@ function sigmoid(value: number) {
 }
 
 function getFormScore(code: string) {
-  const recentForm = TEAM_EXTRAS[code]?.recentForm;
-  if (!recentForm?.length) return 0.5;
+  const recentForm = getRecentForm(code);
+  if (!recentForm.length) return 0.5;
 
   const weightedPoints = recentForm.reduce((total, result, index) => {
     const weight = 1 + (recentForm.length - index - 1) * 0.06;
@@ -641,6 +642,30 @@ function parseSquadValue(value?: string) {
 function getPredictionScore(code: string) {
   const stage = TEAM_EXTRAS[code]?.prediction;
   return stage ? STAGE_RATINGS[stage] ?? 0.42 : 0.42;
+}
+
+export function getRecentForm(code: string, limit = 5): ("W" | "D" | "L")[] {
+  const history = GROUP_FIXTURES
+    .filter((match) => match.status === "finished" && (match.homeTeam === code || match.awayTeam === code))
+    .sort((a, b) => b.matchNumber - a.matchNumber)
+    .map((match) => {
+      if (match.homeScore === null || match.awayScore === null) return null;
+
+      if (match.homeTeam === code) {
+        if (match.homeScore > match.awayScore) return "W";
+        if (match.homeScore === match.awayScore) return "D";
+        return "L";
+      }
+
+      if (match.awayScore > match.homeScore) return "W";
+      if (match.awayScore === match.homeScore) return "D";
+      return "L";
+    })
+    .filter((value): value is "W" | "D" | "L" => value !== null);
+
+  if (history.length > 0) return history.slice(0, limit);
+
+  return TEAM_EXTRAS[code]?.recentForm?.slice(0, limit) ?? [];
 }
 
 function getQualifyingAttack(code: string) {
@@ -677,8 +702,8 @@ function getCompositeRating(code: string) {
 }
 
 function getRecentTrendLabel(code: string) {
-  const form = TEAM_EXTRAS[code]?.recentForm;
-  if (!form?.length) return "arrive with steady form";
+  const form = getRecentForm(code);
+  if (!form.length) return "arrive with steady form";
 
   const wins = form.filter((result) => result === "W").length;
   const losses = form.filter((result) => result === "L").length;

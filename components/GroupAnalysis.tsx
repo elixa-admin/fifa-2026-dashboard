@@ -1,4 +1,4 @@
-import { getTeam } from "@/lib/data/teams";
+import { getRecentForm, getTeam } from "@/lib/data/teams";
 import { getTeamExtras } from "@/lib/data/teamExtras";
 import TeamFlag from "./TeamFlag";
 import FormGuide from "./FormGuide";
@@ -60,7 +60,7 @@ export default function GroupAnalysis({ group, teams, color }: GroupAnalysisProp
 
               {/* Form */}
               <div className="hidden sm:block">
-                <FormGuide form={extras.recentForm} size="sm" />
+                <FormGuide form={getRecentForm(code)} size="sm" />
               </div>
 
               {/* Prediction */}
