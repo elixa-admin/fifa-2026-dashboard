@@ -38,6 +38,9 @@ export default function GoalPredictor({ homeCode, awayCode }: Props) {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Goal projection</p>
           <p className="mt-1 text-sm font-semibold text-white">Expected scoreline and match temperature</p>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
+            {insight.momentumLabel} · {insight.progressLabel}
+          </p>
         </div>
         <div className="w-fit rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-200">
           {insight.totalGoals.toFixed(1)} total goals
@@ -76,6 +79,16 @@ export default function GoalPredictor({ homeCode, awayCode }: Props) {
             <p className="mt-1 text-xs leading-5 text-slate-400">{scenario.detail}</p>
           </div>
         ))}
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        {[insight.regionalLabel, insight.globalLabel]
+          .filter(Boolean)
+          .map((label) => (
+            <div key={label as string} className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2 text-xs leading-5 text-slate-300">
+              {label}
+            </div>
+          ))}
       </div>
     </div>
   );

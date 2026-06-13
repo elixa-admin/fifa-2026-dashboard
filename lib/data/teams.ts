@@ -605,6 +605,10 @@ export interface MatchInsight {
   totalGoals: number;
   narrative: string;
   keyDrivers: string[];
+  progressLabel?: string;
+  momentumLabel?: string;
+  regionalLabel?: string;
+  globalLabel?: string;
 }
 
 export function getTeam(code: string): Team {
@@ -617,6 +621,158 @@ function clamp(value: number, min: number, max: number) {
 
 function sigmoid(value: number) {
   return 1 / (1 + Math.exp(-value));
+}
+
+const CONFEDERATION_STRENGTH: Record<string, number> = {
+  UEFA: 1,
+  CONMEBOL: 0.95,
+  CONCACAF: 0.82,
+  AFC: 0.8,
+  CAF: 0.78,
+  OFC: 0.66,
+};
+
+type TournamentStats = {
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  cleanSheets: number;
+  points: number;
+  recentGoalsFor: number[];
+  recentGoalsAgainst: number[];
+  goalDifference: number;
+};
+
+function getTournamentStats(code: string): TournamentStats {
+  const stats: TournamentStats = {
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    cleanSheets: 0,
+    points: 0,
+    recentGoalsFor: [],
+    recentGoalsAgainst: [],
+    goalDifference: 0,
+  };
+
+  const fixtures = getTournamentFixtures()
+    .filter((match) => match.status === "finished" && (match.homeTeam === code || match.awayTeam === code))
+    .sort((a, b) => b.matchNumber - a.matchNumber);
+
+  fixtures.forEach((match) => {
+    if (match.homeScore === null || match.awayScore === null) return;
+
+    const isHome = match.homeTeam === code;
+    const goalsFor = isHome ? match.homeScore : match.awayScore;
+    const goalsAgainst = isHome ? match.awayScore : match.homeScore;
+
+    stats.played += 1;
+    stats.goalsFor += goalsFor;
+    stats.goalsAgainst += goalsAgainst;
+    stats.goalDifference += goalsFor - goalsAgainst;
+    stats.recentGoalsFor.push(goalsFor);
+    stats.recentGoalsAgainst.push(goalsAgainst);
+    if (goalsAgainst === 0) stats.cleanSheets += 1;
+
+    if (goalsFor > goalsAgainst) {
+      stats.wins += 1;
+      stats.points += 3;
+    } else if (goalsFor === goalsAgainst) {
+      stats.draws += 1;
+      stats.points += 1;
+    } else {
+      stats.losses += 1;
+    }
+  });
+
+  stats.recentGoalsFor = stats.recentGoalsFor.slice(0, 5);
+  stats.recentGoalsAgainst = stats.recentGoalsAgainst.slice(0, 5);
+  return stats;
+}
+
+function getRegionalStrength(code: string) {
+  const team = getTeam(code);
+  return CONFEDERATION_STRENGTH[team.confederation] ?? 0.75;
+}
+
+function getTournamentProgressScore(code: string) {
+  const stats = getTournamentStats(code);
+  if (!stats.played) return 0.5;
+
+  const playedShare = clamp(stats.played / 3, 0, 1);
+  const pointsPerGame = stats.points / (stats.played * 3);
+  const goalsForRate = clamp(stats.goalsFor / stats.played / 3.5, 0, 1);
+  const goalDiffRate = clamp((stats.goalDifference / stats.played + 3) / 6, 0, 1);
+  const cleanSheetRate = stats.cleanSheets / stats.played;
+
+  return clamp(
+    pointsPerGame * 0.4 +
+      goalsForRate * 0.18 +
+      goalDiffRate * 0.22 +
+      cleanSheetRate * 0.12 +
+      playedShare * 0.08,
+    0.05,
+    1,
+  );
+}
+
+function getRecentScoringScore(code: string) {
+  const stats = getTournamentStats(code);
+  if (!stats.played) return 0.5;
+
+  const recentFor = stats.recentGoalsFor.length
+    ? stats.recentGoalsFor.reduce((sum, value) => sum + value, 0) / stats.recentGoalsFor.length
+    : 0;
+  const recentAgainst = stats.recentGoalsAgainst.length
+    ? stats.recentGoalsAgainst.reduce((sum, value) => sum + value, 0) / stats.recentGoalsAgainst.length
+    : 0;
+
+  return clamp(0.48 + recentFor * 0.09 - recentAgainst * 0.07, 0.08, 0.95);
+}
+
+function getProgressLabel(code: string) {
+  const stats = getTournamentStats(code);
+  if (!stats.played) return "fresh tournament profile";
+  if (stats.wins >= 2) return "carrying winning tournament momentum";
+  if (stats.wins >= 1 && stats.goalDifference > 0) return "building a positive group-stage path";
+  if (stats.draws >= 2) return "staying difficult to break down";
+  if (stats.losses >= 1) return "need a stronger response next round";
+  return "are still waiting to establish a rhythm";
+}
+
+function getMomentumLabel(code: string) {
+  const stats = getTournamentStats(code);
+  if (!stats.played) return "no live data yet";
+  const recentFor = stats.recentGoalsFor[0] ?? 0;
+  const recentAgainst = stats.recentGoalsAgainst[0] ?? 0;
+
+  if (recentFor >= 3) return "recent attack is trending hot";
+  if (recentAgainst === 0 && stats.cleanSheets > 0) return "defensive base is steady";
+  if (recentFor > recentAgainst) return "momentum is tilting their way";
+  if (recentAgainst > recentFor) return "recent scoring pressure is slipping";
+  return "recent form is balanced";
+}
+
+function getRegionalLabel(code: string) {
+  const team = getTeam(code);
+  const regionalStrength = getRegionalStrength(code);
+  if (regionalStrength >= 0.95) return `${team.confederation} pedigree is elite`;
+  if (regionalStrength >= 0.82) return `${team.confederation} profile is competitive`;
+  return `${team.confederation} value is being priced as an underdog edge`;
+}
+
+function getGlobalLabel(code: string) {
+  const team = getTeam(code);
+  if (team.fifaRank <= 5) return "global elite ranking support";
+  if (team.fifaRank <= 15) return "top-tier global position";
+  if (team.fifaRank <= 30) return "solid top-30 world standing";
+  return "ranked as a live underdog";
 }
 
 function getFormScore(code: string) {
@@ -689,15 +845,21 @@ function getCompositeRating(code: string) {
   const predictionScore = getPredictionScore(code);
   const attackScore = getQualifyingAttack(code);
   const resistanceScore = getQualifyingResistance(code);
+  const progressScore = getTournamentProgressScore(code);
+  const scoringScore = getRecentScoringScore(code);
+  const regionalScore = getRegionalStrength(code);
 
   return (
-    rankScore * 0.24 +
-    oddsScore * 0.18 +
-    formScore * 0.18 +
-    squadScore * 0.11 +
-    predictionScore * 0.11 +
-    attackScore * 0.1 +
-    resistanceScore * 0.08
+    rankScore * 0.18 +
+    oddsScore * 0.11 +
+    formScore * 0.14 +
+    squadScore * 0.09 +
+    predictionScore * 0.08 +
+    attackScore * 0.09 +
+    resistanceScore * 0.08 +
+    progressScore * 0.15 +
+    scoringScore * 0.1 +
+    regionalScore * 0.08
   );
 }
 
@@ -797,7 +959,18 @@ export function getMatchInsight(homeCode: string, awayCode: string): MatchInsigh
     totalGoals: roundTenth(totalGoals),
     narrative,
     keyDrivers,
+    progressLabel: `${strongerTeam.shortName} ${getProgressLabel(strongerCode)}`,
+    momentumLabel: `${strongerTeam.shortName} ${getMomentumLabel(strongerCode)}`,
+    regionalLabel: `${strongerTeam.shortName} ${getRegionalLabel(strongerCode)}`,
+    globalLabel: `${strongerTeam.shortName} ${getGlobalLabel(strongerCode)}`,
   };
+}
+
+export function getLiveTournamentLikelihood(code: string) {
+  const team = getTeam(code);
+  const rating = clamp(getCompositeRating(code) + (HOST_BONUS[code] ?? 0) * 0.25, 0.05, 1);
+  const power = rating * 0.7 + clamp(team.tournamentOdds / 15, 0.02, 0.8) * 0.3;
+  return Math.round(clamp(power, 0.05, 0.98) * 100);
 }
 
 export function getWinProbability(homeCode: string, awayCode: string): { home: number; draw: number; away: number } {

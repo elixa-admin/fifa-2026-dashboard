@@ -84,6 +84,21 @@ export default function OddsGauge({ homeCode, awayCode }: Props) {
           </div>
         ))}
       </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        {[
+          insight.progressLabel,
+          insight.momentumLabel,
+          insight.regionalLabel,
+          insight.globalLabel,
+        ]
+          .filter(Boolean)
+          .map((label) => (
+            <div key={label as string} className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2 text-xs leading-5 text-slate-300">
+              {label}
+            </div>
+          ))}
+      </div>
     </div>
   );
 }
