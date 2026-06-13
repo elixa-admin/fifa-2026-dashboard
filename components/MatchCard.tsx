@@ -75,25 +75,25 @@ export default function MatchCard({ match, expanded = false, showAdmin = false }
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)] lg:items-center">
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(180px,220px)_minmax(0,1.15fr)] lg:items-center">
           <TeamSide code={liveMatch.homeTeam} side="home" accent={home.color} />
 
-          <div className="mx-auto flex w-full min-w-0 flex-col items-center rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-4 py-4 text-center backdrop-blur-md sm:px-5">
+          <div className="mx-auto flex w-full max-w-[220px] min-w-0 flex-col items-center rounded-[1.4rem] border border-white/10 bg-slate-950/60 px-3 py-3 text-center backdrop-blur-md sm:px-4 sm:py-4">
             {liveMatch.status !== "upcoming" ? (
               <div className="flex items-end gap-2">
-                <span className={`text-4xl font-black tabular-nums sm:text-5xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
+                <span className={`text-3xl font-black tabular-nums sm:text-4xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.homeScore}
                 </span>
-                <span className="pb-2 text-2xl font-light text-slate-500">-</span>
-                <span className={`text-4xl font-black tabular-nums sm:text-5xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
+                <span className="pb-1 text-xl font-light text-slate-500">-</span>
+                <span className={`text-3xl font-black tabular-nums sm:text-4xl ${liveMatch.status === "live" ? "text-red-300" : "text-white"}`}>
                   {liveMatch.awayScore}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-white sm:text-2xl">{insight.home}%</span>
+                <span className="text-lg font-black text-white sm:text-xl">{insight.home}%</span>
                 <span className="text-xs uppercase tracking-[0.24em] text-slate-500">to</span>
-                <span className="text-xl font-black text-white sm:text-2xl">{insight.away}%</span>
+                <span className="text-lg font-black text-white sm:text-xl">{insight.away}%</span>
               </div>
             )}
             <p className="mt-2 text-[11px] uppercase tracking-[0.24em] text-slate-500">
@@ -235,8 +235,8 @@ function TeamSide({ code, side, accent }: { code: string; side: "home" | "away";
     <div className={`flex flex-col gap-3 ${side === "away" ? "lg:items-end lg:text-right" : ""}`}>
       <div className={`flex items-center gap-3 ${side === "away" ? "lg:flex-row-reverse" : ""}`}>
         <TeamFlag code={code} size="sm" variant="hero" />
-        <div>
-          <p className="max-w-[10rem] text-lg font-black leading-tight text-white sm:text-xl">{team.shortName}</p>
+        <div className="min-w-0">
+          <p className="max-w-[12rem] truncate text-base font-black leading-tight text-white sm:text-lg">{team.shortName}</p>
           <p className="text-xs text-slate-400 sm:text-sm">FIFA rank #{team.fifaRank}</p>
         </div>
       </div>
