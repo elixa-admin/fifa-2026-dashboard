@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { fetchLiveFeed } from "@/lib/live/client";
 import type { LiveFeedPayload } from "@/lib/live/feed";
+import { getTournamentFixtures } from "@/lib/data/fixtures";
+import { useScoreStore } from "@/lib/store";
 import TeamFlag from "./TeamFlag";
 
 const FALLBACK: LiveFeedPayload = {
@@ -14,6 +16,7 @@ const FALLBACK: LiveFeedPayload = {
     upcomingMatches: 0,
     lastUpdatedAt: new Date().toISOString(),
   },
+  matchStates: getTournamentFixtures(),
   events: [],
   matches: [],
   notes: [],
@@ -23,6 +26,7 @@ export default function LiveIntelStrip() {
   const [feed, setFeed] = useState<LiveFeedPayload>(FALLBACK);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const syncMatches = useScoreStore((state) => state.syncMatches);
 
   useEffect(() => {
     let active = true;
@@ -33,6 +37,7 @@ export default function LiveIntelStrip() {
         const payload = await fetchLiveFeed();
         if (!active) return;
         setFeed(payload);
+        syncMatches(payload.matchStates);
         setError(null);
       } catch (err) {
         if (!active) return;

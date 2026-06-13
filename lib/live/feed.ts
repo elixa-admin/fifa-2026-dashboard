@@ -1,5 +1,6 @@
 import { getTournamentFixtures } from "@/lib/data/fixtures";
 import { getMatchInsight, getRecentForm, getTeam } from "@/lib/data/teams";
+import type { Match } from "@/lib/data/fixtures";
 
 export type LiveEventType =
   | "match_started"
@@ -52,6 +53,7 @@ export interface LiveFeedPayload {
   source: "mock" | "provider" | "poll";
   generatedAt: string;
   snapshot: LiveMatchSnapshot;
+  matchStates: Match[];
   events: LiveMatchEvent[];
   matches: LiveMatchSummary[];
   notes: string[];
@@ -108,6 +110,7 @@ function buildLiveMatchSummaries(): LiveMatchSummary[] {
 
 export function buildLiveFeedPayload(): LiveFeedPayload {
   const now = new Date().toISOString();
+  const matchStates = getTournamentFixtures();
   const firstMatch = getTournamentFixtures()[0];
   const demoEvent = firstMatch
     ? {
@@ -125,6 +128,7 @@ export function buildLiveFeedPayload(): LiveFeedPayload {
     source: "provider",
     generatedAt: now,
     snapshot: buildLiveSnapshot(),
+    matchStates,
     events: demoEvent ? [demoEvent] : [],
     matches: buildLiveMatchSummaries(),
     notes: [

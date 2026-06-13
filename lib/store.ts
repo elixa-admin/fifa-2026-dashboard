@@ -19,6 +19,7 @@ interface ScoreStore {
   matches: Match[];
   updateScore: (matchId: string, homeScore: number, awayScore: number, status?: Match["status"]) => void;
   resetMatch: (matchId: string) => void;
+  syncMatches: (matches: Match[]) => void;
   getGroupStandings: (group: string) => GroupStanding[];
   getMatch: (matchId: string) => Match | undefined;
 }
@@ -75,6 +76,14 @@ export const useScoreStore = create<ScoreStore>()(
           matches: state.matches.map((m) =>
             m.id === matchId ? { ...m, homeScore: null, awayScore: null, status: "upcoming" } : m
           ),
+        })),
+
+      syncMatches: (matches) =>
+        set((state) => ({
+          matches: state.matches.map((match) => {
+            const incoming = matches.find((item) => item.id === match.id);
+            return incoming ? { ...match, ...incoming } : match;
+          }),
         })),
 
       getGroupStandings: (group) => computeStandings(get().matches, group),
