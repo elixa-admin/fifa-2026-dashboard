@@ -10,27 +10,32 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FIFA World Cup 2026 Dashboard",
-  description: "Live interactive FIFA 2026 World Cup dashboard — fixtures, standings, odds, and predictions in SAST.",
+  title: "FIFA World Cup 2026 Matchday Control Center",
+  description:
+    "Mobile-first FIFA 2026 dashboard with live matches, consensus picks, and group-stage intelligence in SAST.",
   keywords: ["FIFA", "World Cup", "2026", "football", "soccer", "dashboard", "SAST"],
   openGraph: {
-    title: "FIFA World Cup 2026 Dashboard",
-    description: "Live scores, group standings, match odds, and goal predictions — all in SAST.",
+    title: "FIFA World Cup 2026 Matchday Control Center",
+    description: "Live scores, group standings, match odds, and goal predictions in SAST.",
     type: "website",
   },
 };
 
 function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#060c1a]/78 backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050812]/80 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-0">
         <Link href="/" className="flex min-w-0 items-center gap-2.5 group">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-xl">⚽</span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-[11px] font-black uppercase tracking-[0.22em] text-amber-200">
+            WC26
+          </span>
           <div className="min-w-0">
-            <span className="block text-sm leading-none font-black text-white">
+            <span className="block text-sm font-black leading-none text-white">
               <span className="text-amber-400">FIFA</span> WC 2026
             </span>
-            <span className="block text-[11px] leading-none text-slate-500 sm:text-xs">Match Intelligence Dashboard</span>
+            <span className="block text-[11px] leading-none text-slate-500 sm:text-xs">
+              Match Intelligence Dashboard
+            </span>
           </div>
         </Link>
 
@@ -39,7 +44,7 @@ function NavBar() {
             { href: "/", label: "Home" },
             { href: "/groups/A", label: "Groups" },
             { href: "/bracket", label: "Bracket" },
-            { href: "/admin", label: "Admin", className: "text-amber-400" },
+            { href: "/admin", label: "Admin", className: "text-amber-300" },
           ].map(({ href, label, className }) => (
             <Link
               key={href}
@@ -58,12 +63,12 @@ function NavBar() {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-[#060c1a]">
+      <body className="min-h-full flex flex-col bg-[#050812]">
         <NavBar />
-        <main className="flex-1 relative z-10">{children}</main>
-        <footer className="border-t border-white/8 py-8 text-center text-xs text-slate-600">
+        <main className="relative z-10 flex-1">{children}</main>
+        <footer className="border-t border-white/8 py-8 text-center text-xs text-slate-500">
           <p>FIFA World Cup 2026 Dashboard · All times shown in SAST (UTC+2)</p>
-          <p className="mt-1 text-slate-700">USA · Canada · Mexico · June 11 to July 19, 2026</p>
+          <p className="mt-1 text-slate-600">USA · Canada · Mexico · June 11 to July 19, 2026</p>
         </footer>
       </body>
     </html>

@@ -1,162 +1,235 @@
 "use client";
-import { useEffect, useState } from "react";
-import { getSastDateString, GROUP_FIXTURES } from "@/lib/data/fixtures";
+import { useEffect, useMemo, useState } from "react";
+import { GROUP_FIXTURES, getSastDateString } from "@/lib/data/fixtures";
+import { getMatchInsight, getTeam } from "@/lib/data/teams";
 import { useScoreStore } from "@/lib/store";
 
-function TrophySVG() {
-  return (
-    <svg viewBox="0 0 120 160" className="w-24 h-32 drop-shadow-2xl" fill="none">
-      {/* Glow */}
-      <ellipse cx="60" cy="100" rx="40" ry="8" fill="#F5A623" opacity="0.15" />
-      {/* Trophy base */}
-      <rect x="42" y="130" width="36" height="6" rx="3" fill="#C9820A" />
-      <rect x="36" y="120" width="48" height="12" rx="4" fill="#E8A020" />
-      {/* Trophy stem */}
-      <rect x="55" y="100" width="10" height="22" rx="2" fill="#E8A020" />
-      {/* Trophy cup */}
-      <path d="M30 40 Q28 80 50 95 Q60 100 70 95 Q92 80 90 40 Z" fill="url(#gold)" />
-      {/* Handles */}
-      <path d="M30 50 Q14 50 14 65 Q14 80 30 75" stroke="#C9820A" strokeWidth="6" strokeLinecap="round" fill="none" />
-      <path d="M90 50 Q106 50 106 65 Q106 80 90 75" stroke="#C9820A" strokeWidth="6" strokeLinecap="round" fill="none" />
-      {/* Shine */}
-      <path d="M45 55 Q55 48 58 65" stroke="rgba(255,255,255,0.4)" strokeWidth="3" strokeLinecap="round" />
-      {/* Stars */}
-      <text x="52" y="78" fontSize="18" fill="white" opacity="0.9">★</text>
-      <defs>
-        <linearGradient id="gold" x1="30" y1="40" x2="90" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FFD700" />
-          <stop offset="50%" stopColor="#F5A623" />
-          <stop offset="100%" stopColor="#C9820A" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+type Pick = "home" | "draw" | "away";
+
+const PICK_OPTIONS: Array<{ key: Pick; label: string }> = [
+  { key: "home", label: "Home" },
+  { key: "draw", label: "Draw" },
+  { key: "away", label: "Away" },
+];
 
 export default function HeroBanner() {
   const [now, setNow] = useState<Date | null>(null);
   const matches = useScoreStore((s) => s.matches);
+  const liveMatches = useMemo(() => matches.filter((m) => m.status === "live"), [matches]);
+  const upcomingMatches = useMemo(() => matches.filter((m) => m.status === "upcoming"), [matches]);
+  const featuredMatch = liveMatches[0] ?? upcomingMatches[0] ?? matches[0];
+  const home = featuredMatch ? getTeam(featuredMatch.homeTeam) : null;
+  const away = featuredMatch ? getTeam(featuredMatch.awayTeam) : null;
+  const insight = featuredMatch ? getMatchInsight(featuredMatch.homeTeam, featuredMatch.awayTeam) : null;
+  const [pick, setPick] = useState<Pick>("home");
 
   useEffect(() => {
     const updateClock = () => setNow(new Date());
-    setTimeout(updateClock, 0);
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const totalMatches = GROUP_FIXTURES.length;
-  const liveCount = matches.filter((m) => m.status === "live").length;
-  const finishedMatches = matches.filter((m) => m.status === "finished").length;
-  const todayMatches = now ? matches.filter((m) => m.date === getSastDateString(now)) : [];
+  useEffect(() => {
+    if (!insight) return;
+    setPick(insight.edge === "draw" ? "draw" : insight.edge);
+  }, [featuredMatch?.id, insight]);
 
-  const timeStr = now ? now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "--:--:--";
+  if (!featuredMatch || !home || !away || !insight) return null;
 
-  const seededRandom = (seed: number) => {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
+  const timeStr = now
+    ? now.toLocaleTimeString("en-ZA", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : "--:--";
+  const todayCount = now ? matches.filter((m) => m.date === getSastDateString(now)).length : 0;
+  const liveCount = liveMatches.length;
+  const pickLabel = pick === "home" ? home.shortName : pick === "away" ? away.shortName : "Draw";
+  const pickShare = pick === "home" ? insight.home : pick === "draw" ? insight.draw : insight.away;
+  const markerLeft = pick === "home" ? "12%" : pick === "draw" ? "50%" : "88%";
 
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-gradient-to-br from-[#0A0F1E] via-[#0f1a32] to-[#09111f] shadow-[0_28px_80px_rgba(2,6,23,0.36)]">
-      {/* Animated background particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => {
-          const rand1 = seededRandom(i * 1.23);
-          const rand2 = seededRandom(i * 4.56);
-          const rand3 = seededRandom(i * 7.89);
-          const rand4 = seededRandom(i * 10.11);
-          const rand5 = seededRandom(i * 12.34);
-          return (
-            <div
-              key={i}
-              className="absolute rounded-full opacity-20 animate-pulse"
-              style={{
-                width: rand1 * 6 + 2 + "px",
-                height: rand2 * 6 + 2 + "px",
-                left: rand3 * 100 + "%",
-                top: rand4 * 100 + "%",
-                background: i % 2 === 0 ? "#F5A623" : "#22d3ee",
-                animationDelay: rand5 * 3 + "s",
-                animationDuration: rand1 * 3 + 2 + "s",
-              }}
-            />
-          );
-        })}
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(160deg,rgba(7,12,24,0.98),rgba(11,20,36,0.96),rgba(8,14,28,0.98))] shadow-[0_28px_80px_rgba(2,6,23,0.34)]">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-24 top-[-6rem] h-72 w-72 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute right-[-5rem] top-12 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute bottom-[-5rem] left-1/3 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
       </div>
 
-      {/* Gradient overlay arcs */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/5 blur-3xl" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-cyan-400/5 blur-3xl" />
-
-      <div className="relative z-10 px-4 py-6 sm:px-6 md:px-10 md:py-10">
-        <div className="flex flex-col items-start gap-5 md:flex-row md:items-start md:gap-6">
-          {/* Trophy */}
-          <div className="flex-shrink-0 animate-[float_4s_ease-in-out_infinite]">
-            <TrophySVG />
-          </div>
-
-          {/* Main text */}
-          <div className="flex-1 text-left">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[11px] sm:text-xs font-semibold text-amber-400 uppercase tracking-widest border border-amber-400/30 px-3 py-1 rounded-full bg-amber-400/10">
-                23rd Edition · 2026
+      <div className="relative grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-200">
+              Matchday control center
+            </span>
+            {liveCount > 0 && (
+              <span className="rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-red-200">
+                {liveCount} live
               </span>
-              {liveCount > 0 && (
-                <span className="text-[11px] sm:text-xs font-semibold text-red-400 uppercase tracking-widest border border-red-400/30 px-3 py-1 rounded-full bg-red-400/10 animate-pulse">
-                  {liveCount} Live
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[0.95]">
-              <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
-                FIFA
-              </span>{" "}
-              World Cup
-              <br />
-              <span className="text-white/90">2026</span>
-            </h1>
-
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 md:text-base">
-              USA · Canada · Mexico · June 11 – July 19, 2026
-            </p>
-
-            {/* Stats row */}
-            <div className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
-              <StatChip label="Teams" value="48" color="amber" />
-              <StatChip label="Groups" value="12" color="blue" />
-              <StatChip label="Matches Played" value={`${finishedMatches}/${totalMatches}`} color="emerald" />
-              <StatChip label="Today's Matches" value={`${todayMatches.length}`} color="cyan" />
-            </div>
+            )}
+            <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">
+              {timeStr} SAST
+            </span>
           </div>
 
-          {/* Live clock */}
-          <div className="flex-shrink-0 flex flex-row items-start gap-3 md:flex-col md:items-center md:gap-1">
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/40 px-4 py-3 text-center backdrop-blur-sm sm:px-5">
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-1 font-semibold">SAST</p>
-              <p className="text-xl font-black text-white tabular-nums tracking-tight sm:text-2xl">{timeStr}</p>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-                {now?.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" }) || "Loading..."}
+          <div>
+            <h1 className="max-w-xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-[4.5rem]">
+              FIFA World Cup 2026
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+              Live fixture scanning, scoreline consensus, and one-thumb controls in SAST.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <HeroStat label="Teams" value="48" tone="amber" />
+            <HeroStat label="Groups" value="12" tone="blue" />
+            <HeroStat label="Live now" value={String(liveCount)} tone="red" />
+            <HeroStat label="Today" value={String(todayCount)} tone="cyan" />
+          </div>
+
+          <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4 sm:p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Featured fixture
+            </p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-lg font-black text-white sm:text-xl">
+                  {home.shortName} vs {away.shortName}
+                </p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {featuredMatch.timeSAST} · Group {featuredMatch.group} · {featuredMatch.venue}
+                </p>
+              </div>
+              <p className="text-sm text-slate-500">
+                {todayCount} today · {featuredMatch.status === "live" ? "Live now" : "Next kickoff"}
               </p>
             </div>
-            <p className="max-w-[7rem] text-[11px] leading-4 text-slate-600 md:mt-1 md:max-w-none md:text-xs">South African Standard Time</p>
+          </div>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Consensus cloud
+              </p>
+              <h2 className="mt-1 text-lg font-black text-white">Pick the lean</h2>
+            </div>
+            <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-slate-300">
+              {timeStr}
+            </span>
+          </div>
+
+          <div className="mt-4 rounded-[1.4rem] border border-white/8 bg-slate-950/55 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  Featured fixture
+                </p>
+                <p className="mt-1 truncate text-base font-black text-white">
+                  {home.shortName} vs {away.shortName}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {featuredMatch.timeSAST} · Group {featuredMatch.group}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Consensus
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {insight.home}% / {insight.draw}% / {insight.away}%
+                </p>
+              </div>
+            </div>
+
+            <div className="relative mt-4 overflow-hidden rounded-full border border-white/8 bg-white/[0.03]">
+              <div className="flex h-3">
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${insight.home}%`,
+                    background: `linear-gradient(90deg, ${home.color}ee, ${home.color}90)`,
+                  }}
+                />
+                <div className="h-full bg-white/12" style={{ width: `${insight.draw}%` }} />
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${insight.away}%`,
+                    background: `linear-gradient(90deg, ${away.color}85, ${away.color}ee)`,
+                  }}
+                />
+              </div>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 h-6 w-6 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_8px_rgba(15,23,42,0.24)]"
+                style={{ left: markerLeft, transform: "translate(-50%, -50%)" }}
+              />
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {PICK_OPTIONS.map((option) => {
+                const active = pick === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setPick(option.key)}
+                    className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
+                      active
+                        ? "border-amber-400/25 bg-amber-400 text-slate-950 shadow-[0_10px_24px_rgba(245,166,35,0.2)]"
+                        : "border-white/8 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06] hover:text-white"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Your pick
+              </p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-slate-200">{pickLabel}</p>
+                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-200">
+                  {pickShare}%
+                </span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-500">{insight.narrative}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function StatChip({ label, value, color }: { label: string; value: string; color: string }) {
-  const colors: Record<string, string> = {
-    amber: "from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400",
-    blue: "from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400",
-    emerald: "from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400",
-    cyan: "from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 text-cyan-300",
+function HeroStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "amber" | "blue" | "red" | "cyan";
+}) {
+  const tones: Record<string, string> = {
+    amber: "border-amber-400/20 bg-amber-400/10 text-amber-200",
+    blue: "border-blue-400/20 bg-blue-400/10 text-blue-200",
+    red: "border-red-400/20 bg-red-500/10 text-red-200",
+    cyan: "border-cyan-400/20 bg-cyan-400/10 text-cyan-200",
   };
+
   return (
-    <div className={`rounded-xl border bg-gradient-to-br px-4 py-2 text-center ${colors[color]}`}>
-      <p className={`text-lg font-black sm:text-xl ${colors[color].split(" ").pop()}`}>{value}</p>
+    <div className={`rounded-[1.1rem] border px-3 py-2 text-center ${tones[tone]}`}>
+      <p className="text-lg font-black tracking-tight sm:text-xl">{value}</p>
       <p className="text-[11px] font-medium text-slate-400 sm:text-xs">{label}</p>
     </div>
   );
